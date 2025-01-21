@@ -29,13 +29,11 @@ export const getall = async(req,res)=>{
     }
 }
 
-export const getone = async(req,res)=>{
+export const getbyname = async(req,res)=>{
     try {
-        // console.log("nbbhqbh");
-        const fname= req.params.fname;
-        // console.log(fname);
-        const userData= await User.find({ fname: fname });
         
+        const fname= req.params.fname;
+        const userData= await User.find({ fname: fname }); 
         if(!userData){
             return res.status(404).json({msg:"user not exisr"})
 
@@ -49,3 +47,38 @@ export const getone = async(req,res)=>{
     }
 }
 
+export const getbyid = async(req,res)=>{
+    try {
+        const id= req.params.id;
+        const userData = await User.findById(id);
+        if(!userData){
+            return res.status(404).json({msg:"User not found"});
+
+        }
+        res.status(200).json(userData);
+        
+    } catch (error) {
+        res.status(404).json(error);
+        
+    }
+}
+
+
+export const update = async(req,res)=>{
+    try {
+        const id= req.params.id;
+        const userData= await User.findByIdAndUpdate(id,req.body,{new:true});
+        if(!userData){
+            return res.status(404).json({msg:"user not found"});
+        }
+        res.status(200).json(userData);
+        
+    } catch (error) {
+        res.status(404).json({msg:"user not found"});
+        
+    }
+}
+  
+
+
+  
