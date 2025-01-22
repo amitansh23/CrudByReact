@@ -8,9 +8,10 @@ export const create = async(req,res)=>{
             return res.status(404).json({msg:"User not found"});
         }
         const savedData= await userData.save();
-        res.status(200).json(savedData);
+        
+        return res.status(200).json({msg:"User Create Successfully",savedData});
     }
-        catch (error) {
+        catch (error) {  
          res.status(404).json(error);
         
     }
@@ -67,11 +68,30 @@ export const getbyid = async(req,res)=>{
 export const update = async(req,res)=>{
     try {
         const id= req.params.id;
-        const userData= await User.findByIdAndUpdate(id,req.body,{new:true});
+        const userData= await User.findById(id);
         if(!userData){
             return res.status(404).json({msg:"user not found"});
         }
-        res.status(200).json(userData);
+        const updateData = await User.findByIdAndUpdate(id,req.body,{new:true});
+        res.status(200).json(updateData);
+        
+    } catch (error) {
+        res.status(404).json({msg:"user not found"});
+        
+    }
+}
+
+export const deleteuser = async(req,res)=>{
+    try {
+        const id= req.params.id;
+        const userData= await User.findById(id);
+        if(!userData){
+            return res.status(400).json({msg:"user not found"});
+
+        }
+        await User.findByIdAndDelete(id);
+        res.status(200).json({msg:"user deleted"});
+
         
     } catch (error) {
         res.status(404).json({msg:"user not found"});
