@@ -5,11 +5,11 @@ export const create = async(req,res)=>{
     try {
         const userData= new User(req.body);
         if(!userData){
-            return res.status(404).json({msg:"User not found"});
+            return res.status(404).json({msg:"User not Create"});
         }
         const savedData= await userData.save();
         
-        return res.status(200).json({msg:"User Create Successfully",savedData});
+        return res.status(200).json({msg:"Successfull",savedData});
     }
         catch (error) {  
          res.status(404).json(error);
@@ -74,6 +74,7 @@ export const update = async(req,res)=>{
         }
         const updateData = await User.findByIdAndUpdate(id,req.body,{new:true});
         res.status(200).json(updateData);
+        
         
     } catch (error) {
         res.status(404).json({msg:"user not found"});
