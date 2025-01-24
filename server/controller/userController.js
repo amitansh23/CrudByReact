@@ -1,13 +1,18 @@
+// import { response } from "express";
 import User from "../model/userModel.js";
+import bcrypt from 'bcrypt';
 
 
 export const create = async(req,res)=>{
     try {
-        const userData= new User(req.body);
-        if(!userData){
+        const {fname , lname , email , password} = req.body;
+        // const userData= new User(req.body);
+        if(!email){
             return res.status(404).json({msg:"User not Create"});
         }
-        const savedData= await userData.save();
+        const saltRound = 10;
+        const hashpassword = await bcrypt.hash(password , saltRound)
+        const savedData= await User.create({fname, lname, email, password : hashpassword});
         
         return res.status(200).json({msg:"Successfull",savedData});
     }
@@ -99,7 +104,67 @@ export const deleteuser = async(req,res)=>{
         
     }
 }
-  
+
+// export const login =  async(req,res)=>{
+//     try {
+//         const {email, password}= req.body;
+//         console.log(req.body);
+//         const user = await User.findOne({email : email});
+//             if(user){
+//                 bcrypt.compare(password, String(User.password), function(err, res) {
+//                     if(err) {
+//                         console.log('Comparison error: ', err);
+//                     }
+//                     // res.json(user);
+//                     if(res){
+//                    return res.status(200).json({msg:"Login Successful", user});
+//                     //  console.log(user, 'ss');
+//                     }
+//                 })
+                
+//             } 
+            
+//                 }catch(error){
+//                     console.error(error);
+//                     res.status(400).json({success: false, msg:"Invalid credentials"});
+//                 }}
+            
+            
+
+            
+                
 
 
-  
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body; // Extract email and password from request body
+    console.log(req.body);
+
+    // Find the user in the database by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      // If no user is found, send an appropriate response
+      return res.status(404).json({ success: false, msg: "User does not exist" });
+    }
+
+    // Compare the provided password with the hashed password in the database
+    bcrypt.compare(password, user.password, (err, isMatch) => {
+      if (err) {
+        console.error("Comparison error:", err);
+        return res.status(500).json({ success: false, msg: "Server error" });
+      }
+
+      if (isMatch) {
+        // Password matches
+        return res.status(200).json({ success: true, msg: "Login Successful", user });
+      } else {
+        // Password does not match
+        return res.status(401).json({ success: false, msg: "Incorrect password" });
+      }
+    });
+  } catch (error) {
+    console.error("Error during login:", error);
+    // Handle any other errors
+    res.status(500).json({ success: false, msg: "Something went wrong" });
+  }
+};
