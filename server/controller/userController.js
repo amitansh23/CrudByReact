@@ -138,7 +138,7 @@ export const deleteuser = async(req,res)=>{
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body; // Extract email and password from request body
-    console.log(req.body);
+    
 
     // Find the user in the database by email
     const user = await User.findOne({ email });
