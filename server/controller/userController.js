@@ -1,7 +1,7 @@
 // import { response } from "express";
 import User from "../model/userModel.js";
 import bcrypt from 'bcrypt';
-
+import {setUser } from '../middleware/token.js';
 
 export const create = async(req,res)=>{
     try {
@@ -32,6 +32,18 @@ export const getall = async(req,res)=>{
         
     } catch (error) {
         res.status(404).json(error);   
+    }
+}
+
+export const tauth = async(req , res , next)=>{
+    try {
+        if(req.headers){
+            console.log(req.headers)
+        }
+        
+    } catch (error) {
+
+        
     }
 }
 
@@ -155,8 +167,12 @@ export const login = async (req, res) => {
       }
 
       if (isMatch) {
+        const token = setUser(user);
+        
         // Password matches
-        return res.status(200).json({ success: true, msg: "Login Successful", user });
+        return res.status(200).json({ success: true, msg: "Login Successful", user, token });
+
+
       } else {
         // Password does not match
         return res.status(401).json({ success: false, msg: "Incorrect password" });
@@ -169,5 +185,5 @@ export const login = async (req, res) => {
   
 }
 
-// conwdsh
+
 };
