@@ -16,7 +16,13 @@ const userSchema = mongoose.Schema({
     password:{
         type:String,
         requires:true,
+    },
+    status:{
+        type: Number,
+        default:1,
+
     }
+
 })
 
 export default mongoose.model("User", userSchema);// Database crud mai User table bnegi usmai ye userSchema store hoga

@@ -1,4 +1,4 @@
-// import { response } from "express";
+
 import User from "../model/userModel.js";
 import bcrypt from 'bcrypt';
 import {setUser } from '../middleware/token.js';
@@ -24,7 +24,7 @@ export const create = async(req,res)=>{
 
 export const getall = async(req,res)=>{
     try {
-        const userData= await User.find();
+        const userData= await User.find({status: 1});
         if(!userData){
             return res.status(404).json({msg:"User not found"});
         }
@@ -53,7 +53,7 @@ export const getbyname = async(req,res)=>{
         const fname= req.params.fname;
         const userData= await User.find({ fname: fname }); 
         if(!userData){
-            return res.status(404).json({msg:"user not exisr"})
+            return res.status(404).json({msg:"User not exisr"})
 
         }
         res.status(200).json(userData);
@@ -87,10 +87,10 @@ export const update = async(req,res)=>{
         const id= req.params.id;
         const userData= await User.findById(id);
         if(!userData){
-            return res.status(404).json({msg:"user not found"});
+            return res.status(404).json({msg:"User not found"});
         }
         const updateData = await User.findByIdAndUpdate(id,req.body,{new:true});
-        res.status(200).json(updateData);
+        res.status(200).json({msg:"User Updated",updateData});
         
         
     } catch (error) {
@@ -104,47 +104,18 @@ export const deleteuser = async(req,res)=>{
         const id= req.params.id;
         const userData= await User.findById(id);
         if(!userData){
-            return res.status(400).json({msg:"user not found"});
+            return res.status(400).json({msg:"User not found"});
 
         }
         await User.findByIdAndDelete(id);
-        res.status(200).json({msg:"user deleted"});
-
+        res.status(200).json({msg:"User deleted"});
+       
         
     } catch (error) {
-        res.status(404).json({msg:"user not found"});
+        res.status(404).json({msg:"User not found"});
         
     }
 }
-
-// export const login =  async(req,res)=>{
-//     try {
-//         const {email, password}= req.body;
-//         console.log(req.body);
-//         const user = await User.findOne({email : email});
-//             if(user){
-//                 bcrypt.compare(password, String(User.password), function(err, res) {
-//                     if(err) {
-//                         console.log('Comparison error: ', err);
-//                     }
-//                     // res.json(user);
-//                     if(res){
-//                    return res.status(200).json({msg:"Login Successful", user});
-//                     //  console.log(user, 'ss');
-//                     }
-//                 })
-                
-//             } 
-            
-//                 }catch(error){
-//                     console.error(error);
-//                     res.status(400).json({success: false, msg:"Invalid credentials"});
-//                 }}
-            
-            
-
-            
-                
 
 
 export const login = async (req, res) => {
@@ -187,3 +158,48 @@ export const login = async (req, res) => {
 
 
 };
+
+export const softdelete = async(req,res)=>{
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id,{
+            status: 0,
+        }, {new : true});
+        res.status(200).json({success : true,
+            msg : "User deleted successfully",user
+        })
+        
+        
+    } catch (error) {
+        res.status(200).json({msg:"Soft delete not perform"});
+        
+    }
+}
+
+export const restore = async(req,res)=>{
+    try {
+        const userData= await User.find({status : 0});
+        if(!userData){
+            return res.status(404).json({msg:"User not found"});
+        }
+        res.status(200).json(userData);
+        
+    } catch (error) {
+        res.status(404).json(error);   
+    }
+}
+
+export const backup = async(req,res)=>{
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id,{
+            status: 1,
+        }, {new : true});
+        res.status(200).json({success : true,
+            msg : "User Restore successfully",user
+        })
+        
+        
+    } catch (error) {
+        res.status(200).json({msg:"Soft delete not perform"});
+        
+    }
+}
