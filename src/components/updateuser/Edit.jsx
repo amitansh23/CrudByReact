@@ -61,18 +61,18 @@ const submitForm = async(e)=>{
     <form className='addUserForm' onSubmit={submitForm}>
         <div className='inputGroup'>
             <label htmlFor='fname'>First Name</label>
-            <input type='text' value={user.fname} onChange={inputChange} id='fname' name='fname' placeholder='Enter your first name' autoComplete='off'/>
+            <input type='text' value={user.fname} onChange={inputChange} id='fname' name='fname' placeholder='Enter your first name' autoComplete='off' required/>
             
         </div>
 
         <div className='inputGroup'>
             <label htmlFor='lname'>Last Name</label>
-            <input type='text' value={user.lname} onChange={inputChange} id='lname' name='lname' placeholder='Enter your last name' autoComplete='off'/>
+            <input type='text' value={user.lname} onChange={inputChange} id='lname' name='lname' placeholder='Enter your last name' autoComplete='off' required/>
             
         </div>
         <div className='inputGroup'>
             <label htmlFor='email'>Email</label>
-            <input type='email' value= {user.email} onChange={inputChange}  id='email' name='email' placeholder='Enter your Email' autoComplete='off'/>
+            <input type='email' value= {user.email} onChange={inputChange}  id='email' name='email' placeholder='Enter your Email' autoComplete='off' required/>
             
         </div>
 

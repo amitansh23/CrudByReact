@@ -94,7 +94,7 @@ const RegisterPage = () => {
 
   return (
     <div className='addUser'>
-    <Link to={'/'} >Back</Link>
+    <Link to={'/'} > Back</Link>
     <h3>REGISTRATION PAGE</h3>
     <form className='addUserForm' onSubmit={submitForm}>
         <div className='inputGroup'>

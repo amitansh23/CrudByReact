@@ -2,20 +2,21 @@ import React, { useEffect, useState } from 'react'
 import { Link  } from 'react-router-dom'
 import './User.css'
 import axios from 'axios'
-import toast from 'react-hot-toast'
+import toast from 'react-hot-toast';
 
 
 
 
 
-// console.log(token)
 
-const User = () => {
+
+
+const Restore = () => {
 
   const [users , setUsers]= useState([]);
 
   const fetchData = async()=>{
-    const res = await axios.get('http://localhost:8000/api/getall')
+    const res = await axios.get('http://localhost:8000/api/restore')
     setUsers(res.data)
   }
   
@@ -23,7 +24,7 @@ const User = () => {
   useEffect(()=>{
     fetchData();
 },[])
-// const token = localStorage.getItem("token");
+
 
 
   const DELETE = async(userId)=>{
@@ -31,27 +32,34 @@ const User = () => {
     .then((res)=>{
       setUsers((prevUser)=> prevUser.filter((user)=> user._id !== userId))
       toast.success(res.data.msg, {positioin: 'top-center'})
+    })}
 
-    }).catch((error) =>{
-      console.log(error);
-    })
-  }
 
-  const SOFTDELETE = async(userId)=>{
-    await axios.put(`http://localhost:8000/api/softdelete/${userId}`)
-    .then((res)=>{
-      setUsers((prevUser)=> prevUser.filter((user)=> user._id !== userId))
-      toast.success(res.data.msg, {position: 'top-center'})
-    })
-  }
+
+const BACKUP = async(userId)=>{
+    try {
+        await axios.put(`http://localhost:8000/api/backup/${userId}`)
+        .then((res)=>{
+            setUsers((prevUser)=> prevUser.filter((user)=>user._id !== userId))
+            toast.success(res.data.msg, {position: 'top-center'})
+        })
+
+        
+    } catch (error) {
+        console.log(error);
+        
+    }
+
+}
   
   return (
+
+    
    
     <div className='userTable'>
-    {/* {token} */}
+    <Link to={'/'} className='addButton'>Back</Link>
     
-    <Link to={'/add'} className='addButton'>Add User</Link>
-    <Link to={'/restore'}  className='addButton'>RESTORE</Link>
+    
     <table border={1} cellPadding={15} cellSpacing={5}> 
         <thead>
             <tr>
@@ -70,21 +78,14 @@ const User = () => {
                 <td>{user.email}</td>
                 <td className='actionButton'>
                   <button onClick={()=>{
+                    BACKUP(user._id)
+                  }}>BACKUP</button>
+
+                  <button onClick={()=>{
                     DELETE(user._id)
                   }}>DELETE</button>
 
-
-                  <button onClick={()=>{
-                    SOFTDELETE(user._id)
-                  }}> REMOVE </button>
-
-
-
-
-                  <Link to={'/edit/'+user._id}>EDIT</Link>
-
-                  
-                </td>
+                  </td>
             </tr>
           ))
 
@@ -99,4 +100,4 @@ const User = () => {
   )
 }
 
-export default User
+export default Restore
