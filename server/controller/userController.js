@@ -127,7 +127,7 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) {
       // If no user is found, send an appropriate response
-      return res.status(404).json({ success: false, msg: "User does not exist" });
+      return res.status(404).json({ success: false, msg: "Invalid Login" });
     }
 
     // Compare the provided password with the hashed password in the database
