@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import {  useNavigate, Link } from "react-router-dom";
+import {io} from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 
 function Login() {
+  console.log(socket)
 
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -23,9 +27,13 @@ function Login() {
       setMessage(data.msg);
       if (data.success) {
         localStorage.setItem("token", data?.token)
+        socket.emit("new-user", email);
+        
 
   
         navigate("/");
+        
+
         }
       // navigate('/')
       

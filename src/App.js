@@ -8,6 +8,10 @@ import AddV from './components/adduser/vadd';
 import Login from './components/Auth/loginpage';
 import RegistrationPage from './components/Auth/registration';
 import Restore from './components/getuser/restore';
+import { io } from "socket.io-client";
+import { useEffect, useState } from 'react';
+
+const socket = io("http://localhost:5000");
 
 
 function App() {
@@ -43,16 +47,46 @@ function App() {
   ]
   )
 
+  const [connected, setConnected] = useState(false);
 
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("Connected to server:", socket.id);
+      setConnected(true);
+    });
 
+    socket.on("disconnect", () => {
+      console.log("Disconnected from server");
+      setConnected(false);
+    });
 
-
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+    };
+  }, []);
+  console.log(connected ? "Connected to Server ✅" : "Not Connected ❌")
 
   return (
+    <div> 
     <div className="App">
       <RouterProvider router={route}></RouterProvider>
     </div>
+      {/* {connected ? "Connected to Server ✅" : "Not Connected ❌"} */}
+    </div>
+   
   );
+
+
+
+
+
+
+  // return (
+  //   <div className="App">
+  //     <RouterProvider router={route}></RouterProvider>
+  //   </div>
+  // );
 }
 
 export default App;
