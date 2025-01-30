@@ -22,6 +22,31 @@ export const create = async(req,res)=>{
     }
 }
 
+export const registration = async(req,res)=>{
+    try {
+        const {fname , lname , email , password, latitude, longitude} = req.body;
+        // const userData= new User(req.body);
+        if(!email){
+            return res.status(404).json({msg:"User not Create"});
+        }
+        const saltRound = 10;
+        const hashpassword = await bcrypt.hash(password , saltRound)
+
+        // if (!latitude || !longitude) {
+        //     return res.status(400).json({ message: "Location data is required" });
+        //   }
+        
+
+        const savedData= await User.create({fname, lname, email, password : hashpassword , latitude, longitude});
+        
+        return res.status(200).json({msg:"Successfull",savedData});
+    }
+        catch (error) {  
+         res.status(404).json(error);
+        
+    }
+}
+
 export const getall = async(req,res)=>{
     try {
         const userData= await User.find({status: 1});
@@ -165,7 +190,7 @@ export const softdelete = async(req,res)=>{
             status: 0,
         }, {new : true});
         res.status(200).json({success : true,
-            msg : "User deleted successfully",user
+            msg : "User Remove successfully",user
         })
         
         
@@ -203,3 +228,21 @@ export const backup = async(req,res)=>{
         
     }
 }
+
+
+export const store_location = async(req,res)=>{
+    try {
+        const {latitude, longitude}  = req.body;
+        if(!latitude || !longitude){
+            return res.status(400).json({ message: "Location data is required" });
+        }
+        console.log("User Location:", latitude, longitude);
+        const userLocation = { latitude, longitude };
+
+        res.status(200).json({ message: "Location stored successfully", userLocation });
+
+    } catch (error) {
+        res.status(404).json(error);
+        
+    }
+} 
