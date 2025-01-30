@@ -8,6 +8,7 @@ import AddV from './components/adduser/vadd';
 import Login from './components/Auth/loginpage';
 import RegistrationPage from './components/Auth/registration';
 import Restore from './components/getuser/restore';
+// import Map from './components/MapIndia/Map';
 import { io } from "socket.io-client";
 import { useEffect, useState } from 'react';
 
@@ -42,7 +43,8 @@ function App() {
     {
       path: '/restore',
       element: <Restore/>
-    }
+    },
+    
 
   ]
   )

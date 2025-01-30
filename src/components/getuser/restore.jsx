@@ -3,6 +3,7 @@ import { Link  } from 'react-router-dom'
 import './User.css'
 import axios from 'axios'
 import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 
 
@@ -13,7 +14,7 @@ import toast from 'react-hot-toast';
 
 const Restore = () => {
 
-  const [users , setUsers]= useState([]);
+  const [users , setUsers]= useState([]); 
 
   const fetchData = async()=>{
     const res = await axios.get('http://localhost:8000/api/restore')
@@ -27,13 +28,47 @@ const Restore = () => {
 
 
 
+  // const DELETE = async(userId)=>{
+  //   await axios.patch(`http://localhost:8000/api/deleteuser/${userId}`)
+  //   .then((res)=>{
+  //     setUsers((prevUser)=> prevUser.filter((user)=> user._id !== userId))
+  //     toast.success(res.data.msg, {positioin: 'top-center'})
+  //   })}
+
   const DELETE = async(userId)=>{
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+      if (result.isConfirmed){
+        perdelete(userId) 
+        Swal.fire({
+          title: "Deleted!",
+          text: "Your file has been deleted.",
+          icon: "success"
+        });
+      }
+      
+    });
+
+   
+  }
+
+  const perdelete = async(userId)=>{
     await axios.patch(`http://localhost:8000/api/deleteuser/${userId}`)
     .then((res)=>{
       setUsers((prevUser)=> prevUser.filter((user)=> user._id !== userId))
       toast.success(res.data.msg, {positioin: 'top-center'})
-    })}
 
+    }).catch((error) =>{
+      console.log(error);
+    })
+  }
 
 
 const BACKUP = async(userId)=>{
