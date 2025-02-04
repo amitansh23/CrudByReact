@@ -16,6 +16,9 @@ const RegisterPage = () => {
         lname: "",
         email: "",
         password: "",
+        address:"",
+        phone: "",
+        role: "user"
       });
     
       const [errors, setErrors] = useState({
@@ -55,6 +58,20 @@ const RegisterPage = () => {
               "Password must be at least 8 characters long and include a number and a special character";
           }
         }
+
+        if (name === "phone") {
+          const phoneRegex = /^[0-9]{10}$/;
+          if (!phoneRegex.test(value)) {
+            error = "Phone number must be 10 digits";
+          }
+        }
+
+        if (name === "address" && value.trim() === "") {
+          error = "Address cannot be empty";
+        }
+
+
+
     
         // Update state and errors
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -78,7 +95,7 @@ const RegisterPage = () => {
         e.preventDefault();
         
 
-         await axios.post("http://localhost:8000/api/create", formData)
+         await axios.post("http://localhost:8000/api/registration", formData)
         .then(res=>{
             toast.success(res.data.msg, 
                 {position: "top-center", autoClose: 2000}
@@ -123,6 +140,21 @@ const RegisterPage = () => {
             <p style={{ color: "red" }}>{errors.password}</p>)}
           
         </div>
+
+
+        <div className="inputGroup">
+          <label htmlFor="address">Address</label>
+          <input type="text" onChange={handleChange} id="address" name="address" placeholder="Enter your Address" autoComplete="off" />
+          {errors.address && <p style={{ color: "red" }}>{errors.address}</p>}
+        </div>
+
+        <div className="inputGroup">
+          <label htmlFor="phone">Phone Number</label>
+          <input type="text" onChange={handleChange} id="phone" name="phone" placeholder="Enter your Phone Number" autoComplete="off" />
+          {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
+        </div>
+
+
 
         <div className='inputGroup'>
         <button

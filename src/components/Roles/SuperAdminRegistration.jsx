@@ -1,16 +1,12 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import './add.css'
+// import './add.css'
 import { useState } from 'react'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 
-// import bcrypt from 'bcrypt'
 
-
-const AddV = () => {
-
-  
+const SuperAdminRegistration = () => {
 
    
     
@@ -20,6 +16,10 @@ const AddV = () => {
         lname: "",
         email: "",
         password: "",
+        address: "",
+        phone: "",
+        role: "user",
+        
       });
     
       const [errors, setErrors] = useState({
@@ -27,8 +27,10 @@ const AddV = () => {
         lname: "",
         email: "",
         password: "",
+        address:"",
+        phone: "",
       });
-
+      
 
 
       const handleChange = (e) => {
@@ -59,6 +61,18 @@ const AddV = () => {
               "Password must be at least 8 characters long and include a number and a special character";
           }
         }
+        
+        if (name === "phone") {
+            const phoneRegex = /^[0-9]{10}$/;
+            if (!phoneRegex.test(value)) {
+              error = "Phone number must be 10 digits";
+            }
+          }
+
+          if (name === "address" && value.trim() === "") {
+            error = "Address cannot be empty";
+          }
+        
     
         // Update state and errors
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -82,7 +96,7 @@ const AddV = () => {
         e.preventDefault();
         
 
-         await axios.post("http://localhost:8000/api/create", formData)
+         await axios.post("http://localhost:8000/api/regis", formData)
         .then(res=>{
             toast.success(res.data.msg, 
                 {position: "top-center", autoClose: 2000}
@@ -98,22 +112,9 @@ const AddV = () => {
 
   return (
     <div className='addUser'>
-    
-    <Link to={'/'} >Back</Link>
-    <h3>Add New User</h3>
+    <Link to={'/'} > Back</Link>
+    <h3>REGISTRATION PAGE</h3>
     <form className='addUserForm' onSubmit={submitForm}>
-
-
-
-
-
-
-
-
-
-
-
-
         <div className='inputGroup'>
             <label htmlFor='fname'>First Name</label>
             <input type='text' onChange={handleChange} id='fname' name='fname' placeholder='Enter your first name' autoComplete='off'/>
@@ -141,6 +142,35 @@ const AddV = () => {
           
         </div>
 
+
+        <div className="inputGroup">
+          <label htmlFor="address">Address</label>
+          <input type="text" onChange={handleChange} id="address" name="address" placeholder="Enter your Address" autoComplete="off" />
+          {errors.address && <p style={{ color: "red" }}>{errors.address}</p>}
+        </div>
+
+        <div className="inputGroup">
+          <label htmlFor="phone">Phone Number</label>
+          <input type="text" onChange={handleChange} id="phone" name="phone" placeholder="Enter your Phone Number" autoComplete="off" />
+          {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
+        </div>
+
+        <div className="inputGroup">
+          <label>Role</label>
+          <div>
+            <input type="radio" id="admin" name="role" value= {1}  onChange={handleChange} />
+            <label htmlFor="admin">Admin</label>
+          </div>
+          <div>
+            <input type="radio" id="user" name="role" value= {2}  onChange={handleChange} />
+            <label htmlFor="user">User</label>
+          </div>
+        </div>
+        
+
+        
+
+
         <div className='inputGroup'>
         <button
           type="submit"
@@ -148,9 +178,8 @@ const AddV = () => {
             Object.values(errors).some((error) => error !== "") ||
             Object.values(formData).some((value) => value === "")
           }
-        
         >
-          Submit
+          Register
         </button>
         </div>
 
@@ -160,5 +189,6 @@ const AddV = () => {
   )
 }
 
-export default AddV
+export default SuperAdminRegistration
+
 

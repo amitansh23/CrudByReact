@@ -7,6 +7,7 @@ const socket = io("http://localhost:5000");
 
 
 function Login() {
+
   console.log(socket)
 
   const navigate = useNavigate();
@@ -25,14 +26,29 @@ function Login() {
       });
 
       const data = await response.json();
+
+
       setMessage(data.msg);
       if (data.success) {
         localStorage.setItem("token", data?.token)
         socket.emit("new-user", email);
+        console.log(data)
+
+        if(data.user.role === 1){
+          navigate("/superadmindashboard")
+  
+        }
+        else if(data.user.role === 2){
+          navigate("/");
+        }
+        else{
+          navigate("/login")
+        }
+          
         
 
   
-        navigate("/");
+        
         
 
         }
@@ -78,6 +94,6 @@ function Login() {
       
     </div>
   );
-}
+} 
 
 export default Login;

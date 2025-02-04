@@ -77,12 +77,13 @@ const User = () => {
     
     <Link to={'/add'} className='addButton'>Add User</Link>
     <Link to={'/restore'}  className='addButton'>RESTORE</Link>
-    <table border={1} cellPadding={15} cellSpacing={5}> 
+    <table border={1} cellPadding={15} cellSpacing={8}> 
         <thead>
             <tr>
                 <th>S.NO.</th>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Role</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -93,6 +94,7 @@ const User = () => {
                 <td>{index+1}</td>
                 <td>{user.fname} {user.lname}</td>
                 <td>{user.email}</td>
+                <td>{user.role === 1 ? 'Admin' : user.role === 0 ? 'SuperAdmin' : 'User'}</td>
                 <td className='actionButton'>
                   <button onClick={()=>{
                     DELETE(user._id)
