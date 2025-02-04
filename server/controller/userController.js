@@ -277,14 +277,14 @@ export const store_location = async(req,res)=>{
   secure: false, // true for port 465, false for other ports
   auth: {
     user: "officialcheck1234@gmail.com",
-    pass: "keer gpjv fdqg kujx"
+    pass: process.env.SKEY
   }
 
 })
 
   const info = await transporter.sendMail({
     from: '" 👋😊 "  <officialcheck1234@gmail.com>', // sender address
-    to: "topeyaf650@bmixr.com", // list of receivers
+    to: "amitansh@arivani.net", // list of receivers
     subject: "Registration", // Subject line
     text: "Hello world?", // plain text body
     html: htmlTemplate,
