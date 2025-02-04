@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
+import { type } from "os";
+import { string } from "zod";
+import { DateTime } from 'luxon';
 
-const userSchema = mongoose.Schema({
+const userSchema = new mongoose.Schema({
     fname:{
         type:String,
         requires:true,
@@ -22,15 +25,35 @@ const userSchema = mongoose.Schema({
         default:1,
 
     },
-    latitude:{
+    address:{
         type: String,
-        default:0.0,
+        requires: true,
     },
-    longitude:{
+    phone:{
         type: String,
-        default:0.0,
+        requires: true
     },
+    role:{
+        type: Number,
+        requires : true,
+        default: 2
+    },
+    Created_at: {
+        type: String
+    },
+    Updated_at: {
+        type: String
+    }
+    
 
+
+})
+
+userSchema.pre("save", function setDatetime(next){
+    this.Created_at = DateTime.now().toUTC().toISO()
+    this.Updated_at = DateTime.now().toUTC().toISO()
+    next()
+    
 })
 
 export default mongoose.model("User", userSchema);// Database crud mai User table bnegi usmai ye userSchema store hoga

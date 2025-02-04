@@ -2,6 +2,13 @@
 import User from "../model/userModel.js";
 import bcrypt from 'bcrypt';
 import {setUser } from '../middleware/token.js';
+import nodemailer from 'nodemailer'
+import fs from 'fs'
+import { promisify } from "util";
+import path from "path";
+import { fileURLToPath } from 'url';
+import { DateTime } from "luxon";
+
 
 export const create = async(req,res)=>{
     try {
@@ -24,7 +31,7 @@ export const create = async(req,res)=>{
 
 export const registration = async(req,res)=>{
     try {
-        const {fname , lname , email , password, latitude, longitude} = req.body;
+        const {fname , lname , email , password, address , phone } = req.body;
         // const userData= new User(req.body);
         if(!email){
             return res.status(404).json({msg:"User not Create"});
@@ -37,7 +44,7 @@ export const registration = async(req,res)=>{
         //   }
         
 
-        const savedData= await User.create({fname, lname, email, password : hashpassword , latitude, longitude});
+        const savedData= await User.create({fname, lname, email, password : hashpassword , address, phone});
         
         return res.status(200).json({msg:"Successfull",savedData});
     }
@@ -110,11 +117,16 @@ export const getbyid = async(req,res)=>{
 export const update = async(req,res)=>{
     try {
         const id= req.params.id;
+        
         const userData= await User.findById(id);
         if(!userData){
             return res.status(404).json({msg:"User not found"});
         }
-        const updateData = await User.findByIdAndUpdate(id,req.body,{new:true});
+        const time = {Updated_at : DateTime.now().toUTC().toISO()}
+        const mergedObj = { ...req.body, ...time };
+       
+
+        const updateData = await User.findByIdAndUpdate(id,mergedObj ,{new:true});
         res.status(200).json({msg:"User Updated",updateData});
         
         
@@ -154,6 +166,8 @@ export const login = async (req, res) => {
       // If no user is found, send an appropriate response
       return res.status(404).json({ success: false, msg: "Invalid Login" });
     }
+    
+    
 
     // Compare the provided password with the hashed password in the database
     bcrypt.compare(password, user.password, (err, isMatch) => {
@@ -164,11 +178,10 @@ export const login = async (req, res) => {
 
       if (isMatch) {
         const token = setUser(user);
+        mailsend(req.body.email);
         
         // Password matches
         return res.status(200).json({ success: true, msg: "Login Successful", user, token });
-
-
       } else {
         // Password does not match
         return res.status(401).json({ success: false, msg: "Incorrect password" });
@@ -246,3 +259,77 @@ export const store_location = async(req,res)=>{
         
     }
 } 
+
+
+
+ async function mailsend(email){
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+
+    const readFileAsync = promisify(fs.readFile);
+    const htmlTemplate = await readFileAsync('\Public\\Mailtemp.html', 'utf-8');
+    
+
+  const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // true for port 465, false for other ports
+  auth: {
+    user: "officialcheck1234@gmail.com",
+    pass: "keer gpjv fdqg kujx"
+  }
+
+})
+
+  const info = await transporter.sendMail({
+    from: '" 👋😊 "  <officialcheck1234@gmail.com>', // sender address
+    to: "topeyaf650@bmixr.com", // list of receivers
+    subject: "Registration", // Subject line
+    text: "Hello world?", // plain text body
+    html: htmlTemplate,
+    attachments: [{
+        filename: 'download (2).jpeg',
+        path: path.join(__dirname, './download (2).jpeg'),
+        cid: 'logo'
+        },
+        
+        
+        {
+        
+        filename: 'document.pdf',
+        path: path.join(__dirname, "document.pdf"), // Path to the PDF file
+        contentType: "application/pdf"
+        }
+
+
+            
+
+    ] // html body
+  });
+
+  console.log("Message sent: %s", info.messageId);
+
+
+  
+}
+
+
+export const regis = async(req,res)=>{
+    try {
+        const {fname , lname , email , password, address , phone, role} = req.body;
+        // const userData= new User(req.body);
+        if(!email){
+            return res.status(404).json({msg:"User not Create"});
+        }
+        const saltRound = 10;
+        const hashpassword = await bcrypt.hash(password , saltRound)
+        const savedData= await User.create({fname, lname, email, password : hashpassword, address , phone , role});
+        
+        return res.status(200).json({msg:"Successfull",savedData});
+    }
+        catch (error) {  
+         res.status(404).json(error);
+        
+    }
+}

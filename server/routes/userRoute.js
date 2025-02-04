@@ -1,5 +1,5 @@
 import express from 'express';
-import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration} from '../controller/userController.js';
+import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis} from '../controller/userController.js';
 const route = express.Router();
 
 route.post('/create',create);
@@ -15,6 +15,7 @@ route.get('/restore',restore);
 route.put('/backup/:id',backup);
 route.post('/registration',registration);
 // route.post('/store_location',store_location);
+route.post('/regis',regis)
 
 export default route;
 
