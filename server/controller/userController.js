@@ -178,7 +178,7 @@ export const login = async (req, res) => {
 
       if (isMatch) {
         const token = setUser(user);
-        mailsend(req.body.email);
+        // mailsend(req.body.email);
         
         // Password matches
         return res.status(200).json({ success: true, msg: "Login Successful", user, token });

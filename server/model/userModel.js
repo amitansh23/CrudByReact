@@ -1,41 +1,41 @@
 import mongoose from "mongoose";
-import { type } from "os";
-import { string } from "zod";
+// import { type } from "os";
+// import { string } from "zod";
 import { DateTime } from 'luxon';
 
 const userSchema = new mongoose.Schema({
     fname:{
         type:String,
-        requires:true,
+        required :true,
     },
     lname:{
         type:String,
-        requires:true,
+        required :true,
     },
     email:{
         type:String,
-        requires:true,
+        required :true,
     },
     password:{
         type:String,
-        requires:true,
+        required :true,
     },
     status:{
         type: Number,
-        default:1,
+        default :1,
 
     },
     address:{
         type: String,
-        requires: true,
+        required: true,
     },
     phone:{
         type: String,
-        requires: true
+        required: true
     },
     role:{
         type: Number,
-        requires : true,
+        required : true,
         default: 2
     },
     Created_at: {
