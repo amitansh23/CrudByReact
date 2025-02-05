@@ -66,17 +66,8 @@ const AddV = () => {
       };
     
     
-    
-    
-
-      
-
-
   
     const navigate = useNavigate();
-
-   
-
 
     const submitForm = async(e) =>{
         e.preventDefault();

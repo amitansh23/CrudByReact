@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { Link  } from 'react-router-dom'
 import './User.css'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import Swal from 'sweetalert2'
+import { UserContext } from '../../context/UserContext'
 
 
 
@@ -12,6 +13,9 @@ import Swal from 'sweetalert2'
 // console.log(token)
 
 const User = () => {
+
+  const { userData } = useContext(UserContext);
+  console.log(userData,"user")
 
   const [users , setUsers]= useState([]);
 

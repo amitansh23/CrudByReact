@@ -1,7 +1,7 @@
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -9,11 +9,24 @@ import Modal from 'react-bootstrap/Modal';
 import LoginModal from './Auth/LoginModal'
 
 
-  
-
 
 
 function ColorSchemesExample() {
+
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("userData");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));  
+    }
+  }, []);
+
+
+ 
+
+  
+  
 
     const [show, setShow] = useState(false);
 
@@ -27,6 +40,9 @@ function ColorSchemesExample() {
         <Container>
           <Navbar.Brand href="#home">Navbar</Navbar.Brand>
           <Nav className="me-auto">
+          <h2>Welcome, {user ? user.name : "Guest"}!</h2>
+
+
             
             <Button variant="primary" onClick={handleShow}>
         Login
@@ -47,6 +63,10 @@ function ColorSchemesExample() {
           </Nav>
         </Container>
       </Navbar>
+
+      
+
+      
      
     </>
   );

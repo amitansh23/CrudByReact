@@ -10,16 +10,23 @@ import RegistrationPage from './components/Auth/registration';
 import Restore from './components/getuser/restore';
 import Home from './components/Home'
 import SuperAdminRegistration from './components/Roles/SuperAdminRegistration';
-// import SuperAdminDash from './components/Roles/SuperAdminDash';
+
 
 // import Map from './components/MapIndia/Map';
 import { io } from "socket.io-client";
 import { useEffect, useState } from 'react';
 
+import UserProvider from './context/UserContext';
+
+
+
+
 const socket = io("http://localhost:5000");
 
 
 function App() {
+
+  
 
   const route = createBrowserRouter([
     {
@@ -61,11 +68,15 @@ function App() {
       path: '*',
       element: <div>Page not found</div>
     }
+
+    
     
     
 
   ]
   )
+  
+  
 
   const [connected, setConnected] = useState(false);
 
@@ -88,13 +99,23 @@ function App() {
   console.log(connected ? "Connected to Server ✅" : "Not Connected ❌")
 
   return (
-    <div> 
+    <UserProvider>
+    
+
     <div className="App">
+    
       <RouterProvider router={route}></RouterProvider>
+      
     </div>
-      {/* {connected ? "Connected to Server ✅" : "Not Connected ❌"} */}
-    </div>
+    </UserProvider>
+      
+    
+      
    
+   
+    
+    
+    
   );
 
 
