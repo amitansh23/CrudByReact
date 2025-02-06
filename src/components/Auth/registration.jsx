@@ -78,13 +78,6 @@ const RegisterPage = () => {
         setErrors((prev) => ({ ...prev, [name]: error }));
       };
     
-    
-    
-    
-
-      
-
-
   
     const navigate = useNavigate();
 

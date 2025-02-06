@@ -1,7 +1,6 @@
 import './App.css';
-import { createBrowserRouter , RouterProvider } from 'react-router-dom';
+import { BrowserRouter , Routes, Route } from 'react-router-dom';
 import User from './components/getuser/User';
-
 import Edit from './components/updateuser/Edit';
 // import Add from './components/adduser/add';
 import AddV from './components/adduser/vadd';
@@ -10,13 +9,10 @@ import RegistrationPage from './components/Auth/registration';
 import Restore from './components/getuser/restore';
 import Home from './components/Home'
 import SuperAdminRegistration from './components/Roles/SuperAdminRegistration';
-
-
-// import Map from './components/MapIndia/Map';
 import { io } from "socket.io-client";
 import { useEffect, useState } from 'react';
+import ProtectedRoute from './components/ProtectedRoute';
 
-import UserProvider from './context/UserContext';
 
 
 
@@ -26,55 +22,12 @@ const socket = io("http://localhost:5000");
 
 function App() {
 
+  const isLaggedIn = localStorage.getItem("userData");
+  console.log(isLaggedIn)
+
   
-
-  const route = createBrowserRouter([
-    {
-      path: '/',
-      element: <User/>,
-    },
-    {
-      path: '/add',
-      element: <AddV />,
-    },
-    {
-      path: '/edit/:id',
-      element: <Edit/>,
-    },
-    {
-      path: '/login',
-      element: <Login />
-
-    },
-    {
-      path: '/registration',
-      element: <RegistrationPage/>
-
-    },
-    {
-      path: '/restore',
-      element: <Restore/>
-    },
-    {
-      path: '/home',
-      element: <Home/>
-
-    },
-    {
-      path: '/superadmindashboard',
-      element: <SuperAdminRegistration />
-    },
-    {
-      path: '*',
-      element: <div>Page not found</div>
-    }
-
-    
-    
-    
-
-  ]
-  )
+   
+ 
   
   
 
@@ -99,15 +52,35 @@ function App() {
   console.log(connected ? "Connected to Server ✅" : "Not Connected ❌")
 
   return (
-    <UserProvider>
-    
 
-    <div className="App">
-    
-      <RouterProvider router={route}></RouterProvider>
+  <>
+    <BrowserRouter>
+    <Home />
+       
+    <Routes>
+
       
-    </div>
-    </UserProvider>
+    
+      <Route path="/" element={<User />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/superadminregistration" element={<SuperAdminRegistration />} />
+      
+
+      
+
+      
+     <Route element={<ProtectedRoute />}>
+            <Route path="/registration" element={<RegistrationPage />} />
+            <Route path="/user" element={<User />} />
+            <Route path="/edit/:id" element={<Edit />} />
+            <Route path="/add" element={<AddV />} />
+            <Route path="/restore" element={<Restore />} />
+
+    </Route>
+
+    </Routes>
+  </BrowserRouter>
+  </>
       
     
       
@@ -118,16 +91,6 @@ function App() {
     
   );
 
-
-
-
-
-
-  // return (
-  //   <div className="App">
-  //     <RouterProvider router={route}></RouterProvider>
-  //   </div>
-  // );
 }
 
 export default App;

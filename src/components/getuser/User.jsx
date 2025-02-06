@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useContext } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link  } from 'react-router-dom'
 import './User.css'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import Swal from 'sweetalert2'
-import { UserContext } from '../../context/UserContext'
+
 
 
 
@@ -14,9 +14,8 @@ import { UserContext } from '../../context/UserContext'
 
 const User = () => {
 
-  const { userData } = useContext(UserContext);
-  console.log(userData,"user")
-
+  
+  const [user, setUser] = useState(null);
   const [users , setUsers]= useState([]);
 
   const fetchData = async()=>{
@@ -26,6 +25,13 @@ const User = () => {
   
 
   useEffect(()=>{
+
+    const storedUser = localStorage.getItem('userData');
+    console.log(storedUser)
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+
+    }
     fetchData();
 },[])
 // const token = localStorage.getItem("token");
@@ -77,6 +83,7 @@ const User = () => {
   return (
    
     <div className='userTable'>
+    <h2>{user ? `${user.fname} ${user.lname}` : ""}</h2>
     {/* {token} */}
     
     <Link to={'/add'} className='addButton'>Add User</Link>
@@ -113,7 +120,7 @@ const User = () => {
 
 
                   <Link to={'/edit/'+user._id}>EDIT</Link>
-
+                  
                   
                 </td>
             </tr>

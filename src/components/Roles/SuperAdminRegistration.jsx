@@ -8,6 +8,8 @@ import { toast } from 'react-hot-toast'
 
 const SuperAdminRegistration = () => {
 
+  const [load,setLoad] = useState(false);
+
    
     
 
@@ -94,6 +96,7 @@ const SuperAdminRegistration = () => {
 
     const submitForm = async(e) =>{
         e.preventDefault();
+        setLoad(true);
         
 
          await axios.post("http://localhost:8000/api/regis", formData)
@@ -101,6 +104,7 @@ const SuperAdminRegistration = () => {
             toast.success(res.data.msg, 
                 {position: "top-center", autoClose: 2000}
              )
+             setLoad(false);
              navigate('/');
         }).catch(err=>{
             console.log(err);
@@ -179,7 +183,13 @@ const SuperAdminRegistration = () => {
             Object.values(formData).some((value) => value === "")
           }
         >
-          Register
+          
+        
+        {load ? 
+          <div class="spinner-border text-primary" role="status">
+  <span class="sr-only"></span>
+</div>
+: "Register"}
         </button>
         </div>
 

@@ -2,74 +2,70 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { useState, useEffect } from 'react';
-
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-// import Login from './Auth/loginpage';
-import LoginModal from './Auth/LoginModal'
+import LoginModal from './Auth/LoginModal';
+import { useNavigate } from 'react-router-dom';
 
-
-
-
-function ColorSchemesExample() {
-
+const Home=()=> {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("userData");
+    const storedUser = localStorage.getItem('userData');
+    console.log(storedUser)
     if (storedUser) {
       setUser(JSON.parse(storedUser));  
     }
   }, []);
 
+  function clearStorage() {
+    localStorage.removeItem("userData");
+    localStorage.removeItem('token');
+    setUser(null); // Clear user state
+    navigate("/login"); // Redirect to login page
+  }
 
- 
-
-  
-  
-
-    const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    localStorage.setItem('userData', JSON.stringify(userData));
+    setShow(false); // Close the modal on successful login
+  };
 
   return (
     <>
       <Navbar bg="dark" data-bs-theme="dark">
         <Container>
-          <Navbar.Brand href="#home">Navbar</Navbar.Brand>
+          <Navbar.Brand>Navbar</Navbar.Brand>
           <Nav className="me-auto">
-          <h2>Welcome, {user ? user.name : "Guest"}!</h2>
-
-
-            
-            <Button variant="primary" onClick={handleShow}>
-        Login
-      </Button>
-
-      <Modal  show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>LOGIN</Modal.Title>
-        </Modal.Header>
-        < LoginModal/>
-      </Modal>
-
-
-
+            <Modal show={show} onHide={() => setShow(false)}>
+              <Modal.Header closeButton>
+                <Modal.Title>LOGIN</Modal.Title>
+              </Modal.Header>
+              <LoginModal onLoginSuccess={handleLoginSuccess} />
+            </Modal>
 
             <Nav.Link href="registration">Registration</Nav.Link>
-            <Nav.Link href="modal">Modal</Nav.Link>
+            <Nav.Link href="superadminregistration">S Registration</Nav.Link>
+            <Nav.Link href="registration">A Registration</Nav.Link>
+            <Nav.Link href="user">User</Nav.Link>
+            
+
+            {!user ? (
+              <Button variant="primary" onClick={() => setShow(true)}>
+                Login
+              </Button>
+            ) : (
+              <Button onClick={clearStorage}>Logout</Button>
+            )}
           </Nav>
         </Container>
       </Navbar>
 
-      
-
-      
-     
+      <h2>{user ? `${user.fname} ${user.lname}` : ""}</h2>
     </>
   );
 }
 
-export default ColorSchemesExample;
+export default Home;

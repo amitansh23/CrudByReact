@@ -7,11 +7,6 @@ import Swal from 'sweetalert2';
 
 
 
-
-
-
-
-
 const Restore = () => {
 
   const [users , setUsers]= useState([]); 

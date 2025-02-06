@@ -1,16 +1,12 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { io } from "socket.io-client";
-import { UserContext } from "../../context/UserContext";  // ✅ Import UserContext
+
 
 const socket = io("http://localhost:5000");
 
 function Login() {
-  const { setUserData } = useContext(UserContext);  // ✅ Extract setUserData
-  if (!setUserData) {
-    console.error("❌ setUserData is undefined! Check UserProvider wrapping in App.js");
-  }
-
+  
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,21 +25,21 @@ function Login() {
       const data = await response.json();
       
       setMessage(data.msg);
-      setUserData(data?.user);
+      
 
       if (data.success) {
         localStorage.setItem("token", data?.token);
         localStorage.setItem("userData", JSON.stringify(data.user));
         socket.emit("new-user", email);
 
-          // ✅ Store MongoDB user data in context
+          
 
         if (data.user.role === 1) {
-          navigate("/home");
+          navigate("/registration");
         } else if (data.user.role === 2) {
-          navigate("/home");
+          navigate("/user");
         } else {
-          navigate("/home");
+          navigate("/superadminregistration");
         }
       }
     } catch (error) {
