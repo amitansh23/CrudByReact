@@ -11,9 +11,11 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [load,setload] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setload(true);
 
     try {
       const response = await fetch("http://localhost:8000/api/login", {
@@ -23,6 +25,7 @@ function Login() {
       });
 
       const data = await response.json();
+      setload(false);
       
       setMessage(data.msg);
       
@@ -61,7 +64,9 @@ function Login() {
           <label>Password:</label>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit">{load ? <div class="spinner-border text-primary" role="status">
+  <span class="sr-only"></span>
+</div>: "Login"} </button>
       </form>
       {message && <p>{message}</p>}
     </div>

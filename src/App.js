@@ -61,16 +61,16 @@ function App() {
 
       
     
-      <Route path="/" element={<User />} />
+      <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/superadminregistration" element={<SuperAdminRegistration />} />
+      <Route path="/registration" element={<RegistrationPage />} />
       
 
       
 
       
      <Route element={<ProtectedRoute />}>
-            <Route path="/registration" element={<RegistrationPage />} />
+            <Route path="/superadminregistration" element={<SuperAdminRegistration />} />
             <Route path="/user" element={<User />} />
             <Route path="/edit/:id" element={<Edit />} />
             <Route path="/add" element={<AddV />} />

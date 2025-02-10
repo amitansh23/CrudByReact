@@ -9,7 +9,7 @@ import { toast } from 'react-hot-toast'
 const RegisterPage = () => {
 
    
-    
+    const[load, setload]= useState(false);
 
     const [formData, setFormData] = useState({
         fname: "",
@@ -86,6 +86,7 @@ const RegisterPage = () => {
 
     const submitForm = async(e) =>{
         e.preventDefault();
+        setload(true)
         
 
          await axios.post("http://localhost:8000/api/registration", formData)
@@ -93,6 +94,7 @@ const RegisterPage = () => {
             toast.success(res.data.msg, 
                 {position: "top-center", autoClose: 2000}
              )
+            setload(false);
              navigate('/');
         }).catch(err=>{
             console.log(err);
@@ -147,8 +149,6 @@ const RegisterPage = () => {
           {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
         </div>
 
-
-
         <div className='inputGroup'>
         <button
           type="submit"
@@ -157,9 +157,18 @@ const RegisterPage = () => {
             Object.values(formData).some((value) => value === "")
           }
         >
-          Register
+
+
+        {load ? 
+          <div class="spinner-border text-primary" role="status">
+  <span class="sr-only"></span>
+</div>
+: 
+          "Register"}
         </button>
         </div>
+
+        
 
     </form>
       
