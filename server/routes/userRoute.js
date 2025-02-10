@@ -1,6 +1,9 @@
 import express from 'express';
 import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis} from '../controller/userController.js';
 const route = express.Router();
+import signup from '../controller/authController.js';
+import sendOTP from '../controller/otpController.js';
+
 
 route.post('/create',create);
 route.get('/getall',getall);
@@ -14,8 +17,11 @@ route.put('/softdelete/:id',softdelete);
 route.get('/restore',restore);
 route.put('/backup/:id',backup);
 route.post('/registration',registration);
-// route.post('/store_location',store_location);
 route.post('/regis',regis)
+
+route.post('/sendotp',sendOTP);
+route.post('/signup', signup);
+
 
 export default route;
 

@@ -283,7 +283,7 @@ export const store_location = async(req,res)=>{
 
   const info = await transporter.sendMail({
     from: '" 👋😊 "  <officialcheck1234@gmail.com>', // sender address
-    to: "amitansh@arivani.net", // list of receivers
+    to: "", // list of receivers
     subject: "Registration", // Subject line
     text: "Hello world?", // plain text body
     html: htmlTemplate,
