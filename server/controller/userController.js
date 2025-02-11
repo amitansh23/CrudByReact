@@ -1,163 +1,149 @@
 import User from "../model/userModel.js";
-import bcrypt from 'bcrypt';
-import {setUser } from '../middleware/token.js';
-import nodemailer from 'nodemailer'
-import fs from 'fs'
+import bcrypt from "bcrypt";
+import { setUser } from "../middleware/token.js";
+import nodemailer from "nodemailer";
+import fs from "fs";
 import { promisify } from "util";
 import path from "path";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 import { DateTime } from "luxon";
+import OTP from "../model/otpModel.js";
 
-
-export const create = async(req,res)=>{
-    try {
-        const {fname , lname , email , password} = req.body;
-        // const userData= new User(req.body);
-        if(!email){
-            return res.status(404).json({msg:"User not Create"});
-        }
-        const saltRound = 10;
-        const hashpassword = await bcrypt.hash(password , saltRound)
-        const savedData= await User.create({fname, lname, email, password : hashpassword});
-        
-        return res.status(200).json({msg:"Successfull",savedData});
+export const create = async (req, res) => {
+  try {
+    const { fname, lname, email, password } = req.body;
+    // const userData= new User(req.body);
+    if (!email) {
+      return res.status(404).json({ msg: "User not Create" });
     }
-        catch (error) {  
-         res.status(404).json(error);
-        
+    const saltRound = 10;
+    const hashpassword = await bcrypt.hash(password, saltRound);
+    const savedData = await User.create({
+      fname,
+      lname,
+      email,
+      password: hashpassword,
+    });
+
+    return res.status(200).json({ msg: "Successfull", savedData });
+  } catch (error) {
+    res.status(404).json(error);
+  }
+};
+
+export const registration = async (req, res) => {
+  try {
+    const { fname, lname, email, password, address, phone } = req.body;
+    // const userData= new User(req.body);
+    if (!email) {
+      return res.status(404).json({ msg: "User not Create" });
     }
-}
+    const saltRound = 10;
+    const hashpassword = await bcrypt.hash(password, saltRound);
 
-export const registration = async(req,res)=>{
-    try {
-        const {fname , lname , email , password, address , phone } = req.body;
-        // const userData= new User(req.body);
-        if(!email){
-            return res.status(404).json({msg:"User not Create"});
-        }
-        const saltRound = 10;
-        const hashpassword = await bcrypt.hash(password , saltRound)
+    // if (!latitude || !longitude) {
+    //     return res.status(400).json({ message: "Location data is required" });
+    //   }
 
-        // if (!latitude || !longitude) {
-        //     return res.status(400).json({ message: "Location data is required" });
-        //   }
-        
+    const savedData = await User.create({
+      fname,
+      lname,
+      email,
+      password: hashpassword,
+      address,
+      phone,
+    });
 
-        const savedData= await User.create({fname, lname, email, password : hashpassword , address, phone});
-        
-        return res.status(200).json({msg:"Successfull",savedData});
+    return res.status(200).json({ msg: "Successfull", savedData });
+  } catch (error) {
+    res.status(404).json(error);
+  }
+};
+
+export const getall = async (req, res) => {
+  try {
+    const userData = await User.find({ status: 1 });
+    if (!userData) {
+      return res.status(404).json({ msg: "User not found" });
     }
-        catch (error) {  
-         res.status(404).json(error);
-        
+    res.status(200).json(userData);
+  } catch (error) {
+    res.status(404).json(error);
+  }
+};
+
+export const tauth = async (req, res, next) => {
+  try {
+    if (req.headers) {
+      console.log(req.headers);
     }
-}
+  } catch (error) {}
+};
 
-export const getall = async(req,res)=>{
-    try {
-        const userData= await User.find({status: 1});
-        if(!userData){
-            return res.status(404).json({msg:"User not found"});
-        }
-        res.status(200).json(userData);
-        
-    } catch (error) {
-        res.status(404).json(error);   
+export const getbyname = async (req, res) => {
+  try {
+    const fname = req.params.fname;
+    const userData = await User.find({ fname: fname });
+    if (!userData) {
+      return res.status(404).json({ msg: "User not exisr" });
     }
-}
+    res.status(200).json(userData);
+  } catch (error) {
+    console.log(error);
+    res.status(404).json(error);
+  }
+};
 
-export const tauth = async(req , res , next)=>{
-    try {
-        if(req.headers){
-            console.log(req.headers)
-        }
-        
-    } catch (error) {
-
-        
+export const getbyid = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userData = await User.findById(id);
+    if (!userData) {
+      return res.status(404).json({ msg: "User not found" });
     }
-}
+    res.status(200).json(userData);
+  } catch (error) {
+    res.status(404).json(error);
+  }
+};
 
-export const getbyname = async(req,res)=>{
-    try {
-        
-        const fname= req.params.fname;
-        const userData= await User.find({ fname: fname }); 
-        if(!userData){
-            return res.status(404).json({msg:"User not exisr"})
+export const update = async (req, res) => {
+  try {
+    const id = req.params.id;
 
-        }
-        res.status(200).json(userData);
-        
-        
-    } catch (error) {
-        console.log(error);
-        res.status(404).json(error);
+    const userData = await User.findById(id);
+    if (!userData) {
+      return res.status(404).json({ msg: "User not found" });
     }
-}
+    const time = { Updated_at: DateTime.now().toUTC().toISO() };
+    const mergedObj = { ...req.body, ...time };
 
-export const getbyid = async(req,res)=>{
-    try {
-        const id= req.params.id;
-        const userData = await User.findById(id);
-        if(!userData){
-            return res.status(404).json({msg:"User not found"});
+    const updateData = await User.findByIdAndUpdate(id, mergedObj, {
+      new: true,
+    });
+    res.status(200).json({ msg: "User Updated", updateData });
+  } catch (error) {
+    res.status(404).json({ msg: "user not found" });
+  }
+};
 
-        }
-        res.status(200).json(userData);
-        
-    } catch (error) {
-        res.status(404).json(error);
-        
+export const deleteuser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userData = await User.findById(id);
+    if (!userData) {
+      return res.status(400).json({ msg: "User not found" });
     }
-}
-
-
-export const update = async(req,res)=>{
-    try {
-        const id= req.params.id;
-        
-        const userData= await User.findById(id);
-        if(!userData){
-            return res.status(404).json({msg:"User not found"});
-        }
-        const time = {Updated_at : DateTime.now().toUTC().toISO()}
-        const mergedObj = { ...req.body, ...time };
-       
-
-        const updateData = await User.findByIdAndUpdate(id,mergedObj ,{new:true});
-        res.status(200).json({msg:"User Updated",updateData});
-        
-        
-    } catch (error) {
-        res.status(404).json({msg:"user not found"});
-        
-    }
-}
-
-export const deleteuser = async(req,res)=>{
-    try {
-        const id= req.params.id;
-        const userData= await User.findById(id);
-        if(!userData){
-            return res.status(400).json({msg:"User not found"});
-
-        }
-        await User.findByIdAndDelete(id);
-        res.status(200).json({msg:"User deleted"});
-       
-        
-    } catch (error) {
-        res.status(404).json({msg:"User not found"});
-        
-    }
-}
-
+    await User.findByIdAndDelete(id);
+    res.status(200).json({ msg: "User deleted" });
+  } catch (error) {
+    res.status(404).json({ msg: "User not found" });
+  }
+};
 
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body; // Extract email and password from request body
-    
 
     // Find the user in the database by email
     const user = await User.findOne({ email });
@@ -165,8 +151,6 @@ export const login = async (req, res) => {
       // If no user is found, send an appropriate response
       return res.status(404).json({ success: false, msg: "Invalid Login" });
     }
-    
-    
 
     // Compare the provided password with the hashed password in the database
     bcrypt.compare(password, user.password, (err, isMatch) => {
@@ -178,108 +162,104 @@ export const login = async (req, res) => {
       if (isMatch) {
         const token = setUser(user);
         // mailsend(req.body.email);
-        
+
         // Password matches
-        return res.status(200).json({ success: true, msg: "Login Successful", user, token });
+        return res
+          .status(200)
+          .json({ success: true, msg: "Login Successful", user, token });
       } else {
         // Password does not match
-        return res.status(401).json({ success: false, msg: "Incorrect password" });
+        return res
+          .status(401)
+          .json({ success: false, msg: "Incorrect password" });
       }
     });
   } catch (error) {
     console.error("Error during login:", error);
     // Handle any other errors
     res.status(500).json({ success: false, msg: "Something went wrong" });
-  
-}
-
-
+  }
 };
 
-export const softdelete = async(req,res)=>{
-    try {
-        const user = await User.findByIdAndUpdate(req.params.id,{
-            status: 0,
-        }, {new : true});
-        res.status(200).json({success : true,
-            msg : "User Remove successfully",user
-        })
-        
-        
-    } catch (error) {
-        res.status(200).json({msg:"Soft delete not perform"});
-        
+export const softdelete = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: 0,
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ success: true, msg: "User Remove successfully", user });
+  } catch (error) {
+    res.status(200).json({ msg: "Soft delete not perform" });
+  }
+};
+
+export const restore = async (req, res) => {
+  try {
+    const userData = await User.find({ status: 0 });
+    if (!userData) {
+      return res.status(404).json({ msg: "User not found" });
     }
-}
+    res.status(200).json(userData);
+  } catch (error) {
+    res.status(404).json(error);
+  }
+};
 
-export const restore = async(req,res)=>{
-    try {
-        const userData= await User.find({status : 0});
-        if(!userData){
-            return res.status(404).json({msg:"User not found"});
-        }
-        res.status(200).json(userData);
-        
-    } catch (error) {
-        res.status(404).json(error);   
+export const backup = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: 1,
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ success: true, msg: "User Restore successfully", user });
+  } catch (error) {
+    res.status(200).json({ msg: "Soft delete not perform" });
+  }
+};
+
+export const store_location = async (req, res) => {
+  try {
+    const { latitude, longitude } = req.body;
+    if (!latitude || !longitude) {
+      return res.status(400).json({ message: "Location data is required" });
     }
-}
+    console.log("User Location:", latitude, longitude);
+    const userLocation = { latitude, longitude };
 
-export const backup = async(req,res)=>{
-    try {
-        const user = await User.findByIdAndUpdate(req.params.id,{
-            status: 1,
-        }, {new : true});
-        res.status(200).json({success : true,
-            msg : "User Restore successfully",user
-        })
-        
-        
-    } catch (error) {
-        res.status(200).json({msg:"Soft delete not perform"});
-        
-    }
-}
+    res
+      .status(200)
+      .json({ message: "Location stored successfully", userLocation });
+  } catch (error) {
+    res.status(404).json(error);
+  }
+};
 
+async function mailsend(email) {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
 
-export const store_location = async(req,res)=>{
-    try {
-        const {latitude, longitude}  = req.body;
-        if(!latitude || !longitude){
-            return res.status(400).json({ message: "Location data is required" });
-        }
-        console.log("User Location:", latitude, longitude);
-        const userLocation = { latitude, longitude };
-
-        res.status(200).json({ message: "Location stored successfully", userLocation });
-
-    } catch (error) {
-        res.status(404).json(error);
-        
-    }
-} 
-
-
-
- async function mailsend(email){
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-
-
-    const readFileAsync = promisify(fs.readFile);
-    const htmlTemplate = await readFileAsync('\Public\\Mailtemp.html', 'utf-8');
-    
+  const readFileAsync = promisify(fs.readFile);
+  const htmlTemplate = await readFileAsync("Public\\Mailtemp.html", "utf-8");
 
   const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true for port 465, false for other ports
-  auth: {
-    user: "officialcheck1234@gmail.com",
-    pass: process.env.SKEY
-  }
-
-})
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // true for port 465, false for other ports
+    auth: {
+      user: "officialcheck1234@gmail.com",
+      pass: process.env.SKEY,
+    },
+  });
 
   const info = await transporter.sendMail({
     from: '" 👋😊 "  <officialcheck1234@gmail.com>', // sender address
@@ -287,48 +267,122 @@ export const store_location = async(req,res)=>{
     subject: "Registration", // Subject line
     text: "Hello world?", // plain text body
     html: htmlTemplate,
-    attachments: [{
-        filename: 'download (2).jpeg',
-        path: path.join(__dirname, './download (2).jpeg'),
-        cid: 'logo'
-        },
-        
-        
-        {
-        
-        filename: 'document.pdf',
+    attachments: [
+      {
+        filename: "download (2).jpeg",
+        path: path.join(__dirname, "./download (2).jpeg"),
+        cid: "logo",
+      },
+
+      {
+        filename: "document.pdf",
         path: path.join(__dirname, "document.pdf"), // Path to the PDF file
-        contentType: "application/pdf"
-        }
-
-
-            
-
-    ] // html body
+        contentType: "application/pdf",
+      },
+    ], // html body
   });
 
   console.log("Message sent: %s", info.messageId);
+}
 
+export const regis = async (req, res) => {
+  try {
+    const { fname, lname, email, password, address, phone, role } = req.body;
+    // const userData= new User(req.body);
+    if (!email) {
+      return res.status(404).json({ msg: "User not Create" });
+    }
+    const saltRound = 10;
+    const hashpassword = await bcrypt.hash(password, saltRound);
+    const savedData = await User.create({
+      fname,
+      lname,
+      email,
+      password: hashpassword,
+      address,
+      phone,
+      role,
+    });
+
+    return res.status(200).json({ msg: "Successfull", savedData });
+  } catch (error) {
+    res.status(404).json(error);
+  }
+};
+
+export const forgotpassword = async (req, res) => {
+    const { email } = req.body;
+  const { otp } = req.body;
+  const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+  if (response.length === 0 || otp !== response[0].otp) {
+    return res.status(400).json({
+      success: false,
+      message: "The OTP is not valid",
+    });
+  }
+  return res.status(200).json({ msg: "OTP verified", email });
+};
+
+// export const updatepassword = async (req, res) => {
+  
+//   const email = req.body;
+//   const newPassword = req.body;
+// //   const bcryptSalt = 10;
+
+//   const hashpassword = await bcrypt.hash(newPassword, 10);
+
+//   const updatedUser = await User.updateOne(
+//     {email: email},
+//     { $set: { password: hashpassword }}
+//   )
+//   return res.status(200).json({
+//     success: true,
+//     message: "Password updated successfully",
+//   });
+// } catch (error) {
+//   return res.status(500).json({
+//     success: false,
+//     message: "An error occurred while updating the password",
+//     error: error.message,
+//   });
 
   
-}
 
+export const updatepassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body; 
+    if (!email || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and new password are required",
+      });
+    }
 
-export const regis = async(req,res)=>{
-    try {
-        const {fname , lname , email , password, address , phone, role} = req.body;
-        // const userData= new User(req.body);
-        if(!email){
-            return res.status(404).json({msg:"User not Create"});
-        }
-        const saltRound = 10;
-        const hashpassword = await bcrypt.hash(password , saltRound)
-        const savedData= await User.create({fname, lname, email, password : hashpassword, address , phone , role});
-        
-        return res.status(200).json({msg:"Successfull",savedData});
+    // Hash the new password
+    const hashPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update only the password field without modifying other fields
+    const updatedUser = await User.updateOne(
+      { email }, // Find user by email
+      { $set: { password: hashPassword } } // Update only password
+    );
+
+    if (updatedUser.modifiedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found or password already updated",
+      });
     }
-        catch (error) {  
-         res.status(404).json(error);
-        
-    }
-}
+
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while updating the password",
+      error: error.message,
+    });
+  }
+};

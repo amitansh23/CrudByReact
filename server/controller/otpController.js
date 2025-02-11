@@ -9,7 +9,8 @@ const sendOTP = async (req, res) => {
     // Check if user is already present
     const checkUserPresent = await User.findOne({ email });
     // If user found with provided email
-    if (checkUserPresent) {
+    if (!checkUserPresent) { // YE FORGOT PASSWORD KE LIYE HAI
+      // if (!checkUserPresent) {  // YE SIGNUP KE TIME OTP VERIFICATION KE LIYE HAI
       return res.status(401).json({
         success: false,
         message: 'User is already registered',
