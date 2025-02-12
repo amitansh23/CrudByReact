@@ -19,7 +19,10 @@ const User = () => {
   const [users , setUsers]= useState([]);
 
   const fetchData = async()=>{
-    const res = await axios.get('http://localhost:8000/api/getall')
+    const token = localStorage.getItem('token');
+    
+    const res = await axios.get('http://localhost:8000/api/getall',{ headers : {
+      'auth': token}})
     setUsers(res.data)
   }
   
