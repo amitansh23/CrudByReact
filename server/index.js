@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import http ,{createServer} from 'http';
 import {Server} from 'socket.io';
+
 // import path from 'path';
 
 
@@ -53,6 +54,11 @@ app.use(bodyParser.json());
 app.use(cors());
 dotenv.config();
 app.use('/api',route);
+
+
+
+app.use(express.urlencoded({ extended: false }));
+
 
 
 

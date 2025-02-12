@@ -10,10 +10,11 @@ const sendOTP = async (req, res) => {
     const checkUserPresent = await User.findOne({ email });
     // If user found with provided email
     if (!checkUserPresent) { // YE FORGOT PASSWORD KE LIYE HAI
-      // if (!checkUserPresent) {  // YE SIGNUP KE TIME OTP VERIFICATION KE LIYE HAI
+      // if (checkUserPresent) {  // YE SIGNUP KE TIME OTP VERIFICATION KE LIYE HAI
       return res.status(401).json({
         success: false,
-        message: 'User is already registered',
+        message: 'User is already registered', // YE SIGNUP KE LIYE
+        // message: 'User not found' // YE FORGOT KE LIYE
       });
     }
     let otp = otpGenerator.generate(6, {

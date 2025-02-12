@@ -8,6 +8,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { DateTime } from "luxon";
 import OTP from "../model/otpModel.js";
+// import multer from "multer";
+
 
 export const create = async (req, res) => {
   try {
@@ -323,30 +325,6 @@ export const forgotpassword = async (req, res) => {
   return res.status(200).json({ msg: "OTP verified", email });
 };
 
-// export const updatepassword = async (req, res) => {
-  
-//   const email = req.body;
-//   const newPassword = req.body;
-// //   const bcryptSalt = 10;
-
-//   const hashpassword = await bcrypt.hash(newPassword, 10);
-
-//   const updatedUser = await User.updateOne(
-//     {email: email},
-//     { $set: { password: hashpassword }}
-//   )
-//   return res.status(200).json({
-//     success: true,
-//     message: "Password updated successfully",
-//   });
-// } catch (error) {
-//   return res.status(500).json({
-//     success: false,
-//     message: "An error occurred while updating the password",
-//     error: error.message,
-//   });
-
-  
 
 export const updatepassword = async (req, res) => {
   try {
@@ -357,11 +335,7 @@ export const updatepassword = async (req, res) => {
         message: "Email and new password are required",
       });
     }
-
-    // Hash the new password
     const hashPassword = await bcrypt.hash(newPassword, 10);
-
-    // Update only the password field without modifying other fields
     const updatedUser = await User.updateOne(
       { email }, // Find user by email
       { $set: { password: hashPassword } } // Update only password
@@ -386,3 +360,17 @@ export const updatepassword = async (req, res) => {
     });
   }
 };
+
+
+export const uploadfile = async (req, res) => {
+  const file = req?.file;
+  try {
+    if (!file) {
+      return res.status(400).json({ message: "File is required" });
+    }
+    return res.status(2000).json({msg:"File uploaded successfully", status: "success"});
+  }
+  catch (error) {
+    res.status(404).json(error);
+  }
+  };
