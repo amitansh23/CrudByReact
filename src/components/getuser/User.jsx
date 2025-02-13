@@ -6,39 +6,49 @@ import toast from 'react-hot-toast'
 import Swal from 'sweetalert2'
 
 
-
-
-
-
-// console.log(token)
-
 const User = () => {
 
   
   const [user, setUser] = useState(null);
   const [users , setUsers]= useState([]);
+  const [search, setSearch] = useState('');
 
-  const fetchData = async()=>{
+  const [count, setCount] = useState(5);
+
+  const fetchData = async(limit, query)=>{
     const token = localStorage.getItem('token');
     
-    const res = await axios.get('http://localhost:8000/api/getall',{ headers : {
+    // const res = await axios.get('http://localhost:8000/api/getall',{ headers : {
+    //   'auth': token}})
+    // setUsers(res.data)
+
+    const res = await axios.get(`http://localhost:8000/api/getlimiteddata?count=${limit}&search=${query}`,{ headers : {
       'auth': token}})
-    setUsers(res.data)
+    setUsers(res?.data?.userData);
+    console.log(res.data)
   }
+
+  const handlenext=()=>{
+    setCount(count+5)  
+  }
+
+  const handleSearch = (e) =>{
+    const query = e.target.value.toLowerCase();
+    setSearch(query);
+    fetchData(5 , query);
+  };
+
+  
   
 
   useEffect(()=>{
-
     const storedUser = localStorage.getItem('userData');
-    console.log(storedUser)
     if (storedUser) {
       setUser(JSON.parse(storedUser));
 
     }
-    fetchData();
-},[])
-// const token = localStorage.getItem("token");
-
+    fetchData(count, search);
+},[count, search])
 
   const DELETE = async(userId)=>{
     Swal.fire({
@@ -87,10 +97,16 @@ const User = () => {
    
     <div className='userTable'>
     <h2>{user ? `${user.fname} ${user.lname}` : ""}</h2>
-    {/* {token} */}
-    
     <Link to={'/add'} className='addButton'>Add User</Link>
     <Link to={'/restore'}  className='addButton'>RESTORE</Link>
+
+    <input
+                type="text"
+                placeholder="Search items..."
+                value={search}
+                onChange={handleSearch}
+            />
+
     <table border={1} cellPadding={15} cellSpacing={8}> 
         <thead>
             <tr>
@@ -134,7 +150,7 @@ const User = () => {
            
         </tbody>
     </table>
-    
+    <button className='addButton'  onClick={handlenext}>Next</button>
       
     </div>
   )
