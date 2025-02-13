@@ -46,22 +46,12 @@ const io = new Server(server, {
 
 
 
-
-
-
-
 app.use(bodyParser.json());
 app.use(cors());
 dotenv.config();
 app.use('/api',route);
 
-
-
 app.use(express.urlencoded({ extended: false }));
-
-
-
-
 
 const PORT = process.env.PORT || 7000;
 const MONGO_URI = process.env.MONGO_URI;

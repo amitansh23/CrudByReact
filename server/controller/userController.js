@@ -63,6 +63,7 @@ export const registration = async (req, res) => {
 };
 
 export const getall = async (req, res) => {
+  
   try {
     const userData = await User.find({ status: 1 });
     if (!userData) {
@@ -264,7 +265,7 @@ async function mailsend(email) {
   });
 
   const info = await transporter.sendMail({
-    from: '" 👋😊 "  <officialcheck1234@gmail.com>', // sender address
+    from: '" 👋😊 "<officialcheck1234@gmail.com>', // sender address
     to: "", // list of receivers
     subject: "Registration", // Subject line
     text: "Hello world?", // plain text body
@@ -376,6 +377,7 @@ export const uploadfile = async (req, res) => {
   };
 
 export const getlimiteddata = async (req, res) => {
+  // console.log(req.user)
    
   try {
     let {count, search}= req.query;
@@ -383,12 +385,21 @@ export const getlimiteddata = async (req, res) => {
 
     let filter={};
     if(search){
-      filter= {email: {$regex: search, $options: "i"}};
-    }
-    const userData = await User.find(filter).limit(count);
-    // res.status(200).json(userData);
+      filter = {
+        $or: [
+            { fname: { $regex: search, $options: "i" } },  
+            { email: { $regex: search, $options: "i" } } 
+        ]
+    };
+
     
-    res.status(200).json({userData});
+      
+      
+    }
+    const totalItems = await User.countDocuments(); // Get total count
+    const userData = await User.find(filter).limit(count);
+    
+    res.status(200).json({userData, total: totalItems});
   } catch (error) {
     res.status(404).json({msg:"Error fetching data"});
     
