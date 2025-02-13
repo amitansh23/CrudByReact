@@ -374,3 +374,26 @@ export const uploadfile = async (req, res) => {
     res.status(404).json(error);
   }
   };
+
+export const getlimiteddata = async (req, res) => {
+   
+  try {
+    let {count, search}= req.query;
+    count = parseInt(count)|| 5;
+
+    let filter={};
+    if(search){
+      filter= {email: {$regex: search, $options: "i"}};
+    }
+    const userData = await User.find(filter).limit(count);
+    // res.status(200).json(userData);
+    
+    res.status(200).json({userData});
+  } catch (error) {
+    res.status(404).json({msg:"Error fetching data"});
+    
+  }
+
+
+
+}
