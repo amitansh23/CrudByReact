@@ -14,6 +14,7 @@ const User = () => {
   const [search, setSearch] = useState('');
 
   const [count, setCount] = useState(5);
+  const [total, setTotal] = useState(0);
 
   const fetchData = async(limit, query)=>{
     const token = localStorage.getItem('token');
@@ -25,7 +26,8 @@ const User = () => {
     const res = await axios.get(`http://localhost:8000/api/getlimiteddata?count=${limit}&search=${query}`,{ headers : {
       'auth': token}})
     setUsers(res?.data?.userData);
-    console.log(res.data)
+    setTotal(res?.data?.total);
+    
   }
 
   const handlenext=()=>{
@@ -79,6 +81,10 @@ const User = () => {
     .then((res)=>{
       setUsers((prevUser)=> prevUser.filter((user)=> user._id !== userId))
       toast.success(res.data.msg, {positioin: 'top-center'})
+      setTotal((prevTotal)=> prevTotal - 1);
+
+
+      // fetchData(count, search);
 
     }).catch((error) =>{
       console.log(error);
@@ -96,16 +102,19 @@ const User = () => {
   return (
    
     <div className='userTable'>
+    <p><strong>Total Items:</strong> {total}</p>    
     <h2>{user ? `${user.fname} ${user.lname}` : ""}</h2>
     <Link to={'/add'} className='addButton'>Add User</Link>
     <Link to={'/restore'}  className='addButton'>RESTORE</Link>
-
-    <input
+    
+            <input
                 type="text"
                 placeholder="Search items..."
                 value={search}
                 onChange={handleSearch}
             />
+
+    
 
     <table border={1} cellPadding={15} cellSpacing={8}> 
         <thead>

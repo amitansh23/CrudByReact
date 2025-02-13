@@ -14,9 +14,6 @@ import { useEffect, useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 
 
-
-
-
 const socket = io("http://localhost:5000");
 
 
@@ -25,10 +22,6 @@ function App() {
   const isLaggedIn = localStorage.getItem("userData");
   console.log(isLaggedIn)
 
-  
-   
- 
-  
   
 
   const [connected, setConnected] = useState(false);

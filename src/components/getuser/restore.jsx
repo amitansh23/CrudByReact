@@ -22,14 +22,6 @@ const Restore = () => {
 },[])
 
 
-
-  // const DELETE = async(userId)=>{
-  //   await axios.patch(`http://localhost:8000/api/deleteuser/${userId}`)
-  //   .then((res)=>{
-  //     setUsers((prevUser)=> prevUser.filter((user)=> user._id !== userId))
-  //     toast.success(res.data.msg, {positioin: 'top-center'})
-  //   })}
-
   const DELETE = async(userId)=>{
     Swal.fire({
       title: "Are you sure?",
@@ -87,7 +79,7 @@ const BACKUP = async(userId)=>{
     
    
     <div className='userTable'>
-    <Link to={'/'} className='addButton'>Back</Link>
+    <Link to={'/user'} className='addButton'>Back</Link>
     
     
     <table border={1} cellPadding={15} cellSpacing={5}> 
