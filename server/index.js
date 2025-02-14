@@ -6,10 +6,9 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import http ,{createServer} from 'http';
 import {Server} from 'socket.io';
+import session from 'express-session';
 
 // import path from 'path';
-
-
 
 
 const app= express();
@@ -53,6 +52,8 @@ app.use('/api',route);
 
 app.use(express.urlencoded({ extended: false }));
 
+app.set("view engine", "ejs");
+
 const PORT = process.env.PORT || 7000;
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -62,3 +63,22 @@ mongoose.connect(MONGO_URI).then(()=>{
         
     })
 })
+
+app.use(session({
+  secret: "Amitansh", // Replace with a strong, random secret
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 3600000 // Session duration in milliseconds (e.g., 1 hour)
+  }
+}));
+
+
+
+
+
+
+
+
+
+

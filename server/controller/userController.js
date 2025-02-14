@@ -8,6 +8,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { DateTime } from "luxon";
 import OTP from "../model/otpModel.js";
+import { google } from "googleapis";
+
 // import multer from "multer";
 
 
@@ -163,7 +165,11 @@ export const login = async (req, res) => {
       }
 
       if (isMatch) {
+        // req.session.user = { email: user.email, role: user.role };
         const token = setUser(user);
+
+        
+        
         // mailsend(req.body.email);
 
         // Password matches
@@ -404,7 +410,80 @@ export const getlimiteddata = async (req, res) => {
     res.status(404).json({msg:"Error fetching data"});
     
   }
-
-
-
 }
+
+
+
+   
+export const createEvent = async (req, res) => {
+
+const SCOPES = process.env.SCOPES;
+const GOOGLE_PRIVATE_KEY= process.env.GOOGLE_PRIVATE_KEY.replace(new RegExp("\\\\n", "\g"), "\n")
+const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL;
+const GOOGLE_PROJECT_NUMBER = process.env.GOOGLE_PROJECT_NUMBER;
+const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
+
+const jwtClient = new google.auth.JWT(
+  GOOGLE_CLIENT_EMAIL,
+  null,
+  GOOGLE_PRIVATE_KEY,
+  SCOPES
+);
+
+const calendar = google.calendar({
+  version: 'v3',
+  project: GOOGLE_PROJECT_NUMBER,
+  auth: jwtClient
+});
+
+  var event = {
+    'summary': 'My first event!',
+    'location': 'Hyderabad,India',
+    'description': 'First event with nodeJS!',
+    'start': {
+      'dateTime': '2025-03-04T09:00:00-07:00',
+      'timeZone': 'Asia/Dhaka',
+    },
+    'end': {
+      'dateTime': '2025-03-05T17:00:00-07:00',
+      'timeZone': 'Asia/Dhaka',
+    },
+    'attendees': [],
+    'reminders': {
+      'useDefault': false,
+      'overrides': [
+        {'method': 'email', 'minutes': 24 * 60},
+        {'method': 'popup', 'minutes': 10},
+      ],
+    },
+  };
+  
+  const auth = new google.auth.GoogleAuth({
+    keyFile: process.env.keyFile,
+    scopes: 'https://www.googleapis.com/auth/calendar',
+  });
+  auth.getClient().then(a=>{
+    calendar.events.insert({
+      auth:a,
+      calendarId: GOOGLE_CALENDAR_ID,
+      resource: event,
+    }, function(err, event) {
+      if (err) {
+        console.log('There was an error contacting the Calendar service: ' + err);
+        return;
+      }
+      console.log('Event created');
+      
+      res.jsonp("Event successfully created!");
+    });
+  })
+}
+
+
+  
+  
+  
+
+
+
+ 

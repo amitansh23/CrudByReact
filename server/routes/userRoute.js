@@ -1,5 +1,5 @@
 import express from 'express';
-import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata} from '../controller/userController.js';
+import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent} from '../controller/userController.js';
 const route = express.Router();
 import signup from '../controller/authController.js';
 import sendOTP from '../controller/otpController.js';
@@ -42,6 +42,8 @@ route.post('/forgotpassword', forgotpassword);
 route.put('/updatepassword', updatepassword);
 route.post('/uploadfile', upload.single("file") ,uploadfile)
 route.get('/getlimiteddata', getlimiteddata)
+
+route.get('/createEvent', createEvent);
 
 
 export default route;
