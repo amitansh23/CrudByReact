@@ -12,6 +12,7 @@ import SuperAdminRegistration from './components/Roles/SuperAdminRegistration';
 import { io } from "socket.io-client";
 import { useEffect, useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
+import Calender from './components/EventSelector/calender';
 
 
 const socket = io("http://localhost:5000");
@@ -57,6 +58,7 @@ function App() {
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/registration" element={<RegistrationPage />} />
+      <Route path="/calender" element={<Calender />} />
       
 
       
