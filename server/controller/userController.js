@@ -12,6 +12,7 @@ import { google } from "googleapis";
 import assert from "assert";
 import { MongoClient, ObjectId } from "mongodb";
 import csv from "csvtojson";
+import userProfile from "../model/userProfile.js";
 
 export const create = async (req, res) => {
   try {
@@ -47,9 +48,7 @@ export const registration = async (req, res) => {
     const saltRound = 10;
     const hashpassword = await bcrypt.hash(password, saltRound);
 
-    // if (!latitude || !longitude) {
-    //     return res.status(400).json({ message: "Location data is required" });
-    //   }
+    
 
     const savedData = await User.create({
       fname,
@@ -59,6 +58,7 @@ export const registration = async (req, res) => {
       address,
       phone,
     });
+
 
     return res.status(200).json({ msg: "Successfull", savedData });
   } catch (error) {
@@ -236,6 +236,10 @@ export const login = async (req, res, next) => {
       console.error("Error setting session:", error);
       return next(new Error("Error creating user session"));
     }
+
+    const profile = await userProfile.findOne({ userId: user._id })
+    console.log("Profile:", profile);
+      
 
     return res.status(200).json({
       success: true,
@@ -434,24 +438,18 @@ export const uploadfile = async (req, res) => {
   //     return res.status(401).json({ msg: "Unauthorized: User not logged in", status: "error" });
   // }
 
-    const url = process.env.MONGO_URI;
+    
     console.log("Multer", req?.file?.filename);
-
-    const dbName = "crud";
-    const client = new MongoClient(url);
-
-    await client.connect();
     console.log("Connected successfully to database");
 
-    const db = client.db(dbName);
-    const collection = db.collection("uploadedfiles"); // Collection to store filenames
 
-    const result = await collection.insertOne({
+
+    const result = await userProfile.insertOne({
       filename: req?.file?.filename,
       // userId: req.session.user._id, // Convert to ObjectId
       uploadedAt: new Date(),
     });
-    await client.close();
+    
 
     res
       .status(200)
