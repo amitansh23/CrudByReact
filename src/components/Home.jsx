@@ -5,10 +5,10 @@ import { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import LoginModal from './Auth/LoginModal';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 
 const Home=()=> {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [show, setShow] = useState(false);
 
@@ -20,11 +20,23 @@ const Home=()=> {
     }
   }, []);
 
-  function clearStorage() {
-    localStorage.removeItem("userData");
-    localStorage.removeItem('token');
-    setUser(null); // Clear user state
-    navigate("/login"); // Redirect to login page
+const clearStorage = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/api/logout", {
+        method: "POST",
+        credentials: "include", // Ensures session cookies are sent
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        localStorage.clear(); // Remove user data from local storage
+        window.location.href = "/login"; // Redirect to login page
+      } else {
+        alert("Logout failed: " + data.msg);
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
   }
 
   const handleLoginSuccess = (userData) => {

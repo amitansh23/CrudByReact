@@ -73,7 +73,7 @@ const AddV = () => {
         e.preventDefault();
         
 
-         await axios.post("http://localhost:8000/api/create", formData)
+         await axios.post("http://localhost:8000/api/create", formData, {withCredentials: true})
         .then(res=>{
             toast.success(res.data.msg, 
                 {position: "top-center", autoClose: 2000}
