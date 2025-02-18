@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
+const Schema = mongoose.Schema;
 // import { type } from "os";
 // import { string } from "zod";
 import { DateTime } from 'luxon';
 
-const userSchema = new mongoose.Schema({
+
+const userSchema = new Schema({
     fname:{
         type:String,
         required :true,
@@ -27,11 +29,11 @@ const userSchema = new mongoose.Schema({
     },
     address:{
         type: String,
-        required: true,
+        // required: true,
     },
     phone:{
         type: String,
-        required: true
+        // required: true
     },
     role:{
         type: Number,
@@ -43,9 +45,11 @@ const userSchema = new mongoose.Schema({
     },
     Updated_at: {
         type: String
+    },
+    CreatedBy:{
+        type: Schema.Types.ObjectId, 
+        ref: 'users'
     }
-    
-
 
 })
 
@@ -56,4 +60,4 @@ userSchema.pre("save", function setDatetime(next){
     
 })
 
-export default mongoose.model("User", userSchema);// Database crud mai User table bnegi usmai ye userSchema store hoga
+export default mongoose.model("users", userSchema);// Database crud mai User table bnegi usmai ye userSchema store hoga

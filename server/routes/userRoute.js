@@ -1,5 +1,5 @@
 import express from 'express';
-import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent} from '../controller/userController.js';
+import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout} from '../controller/userController.js';
 const route = express.Router();
 import signup from '../controller/authController.js';
 import sendOTP from '../controller/otpController.js';
@@ -8,20 +8,34 @@ import { getUser } from '../middleware/token.js';
 
 
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      return cb(null, "./uploads/");
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//       return cb(null, "./uploads/");
+//     },
+//     filename: function (req, file, cb) {
+//       return cb(null, `${Date.now()}-${file.originalname}`);
+//     },
+//   });
+//   const upload = multer({ storage });
+
+var filename = null;
+var storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, "./uploads/");
     },
-    filename: function (req, file, cb) {
-      return cb(null, `${Date.now()}-${file.originalname}`);
+    filename: function(req, file, cb) {
+        filename = Date.now() + "-" + file.originalname;
+        cb(null, filename);
     },
-  });
-  const upload = multer({ storage  
-  });
+});
+
+var upload = multer({
+    storage: storage,
+});
 
 
 
-route.post('/create',create);
+route.post('/create',getUser, create);
 route.get('/getall',getUser,getall);
 route.get('/getbyname/:fname',getbyname);
 route.get('/getbyid/:id',getbyid);
@@ -40,10 +54,12 @@ route.post('/signup', signup);
 
 route.post('/forgotpassword', forgotpassword);
 route.put('/updatepassword', updatepassword);
-route.post('/uploadfile', upload.single("file") ,uploadfile)
-route.get('/getlimiteddata', getlimiteddata)
+route.post('/uploadfile',getUser, upload.single("file") ,uploadfile)
+route.get('/getlimiteddata', getUser,getlimiteddata)
 
 route.get('/createEvent', createEvent);
+
+route.post('/logout', logout);
 
 
 export default route;

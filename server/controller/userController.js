@@ -9,13 +9,14 @@ import { fileURLToPath } from "url";
 import { DateTime } from "luxon";
 import OTP from "../model/otpModel.js";
 import { google } from "googleapis";
-
-// import multer from "multer";
-
+import assert from "assert";
+import { MongoClient, ObjectId } from "mongodb";
+import csv from "csvtojson";
 
 export const create = async (req, res) => {
   try {
     const { fname, lname, email, password } = req.body;
+    const CreatedBy = req.user._id;
     // const userData= new User(req.body);
     if (!email) {
       return res.status(404).json({ msg: "User not Create" });
@@ -27,6 +28,7 @@ export const create = async (req, res) => {
       lname,
       email,
       password: hashpassword,
+      CreatedBy,
     });
 
     return res.status(200).json({ msg: "Successfull", savedData });
@@ -65,7 +67,6 @@ export const registration = async (req, res) => {
 };
 
 export const getall = async (req, res) => {
-  
   try {
     const userData = await User.find({ status: 1 });
     if (!userData) {
@@ -146,46 +147,104 @@ export const deleteuser = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body; // Extract email and password from request body
+// export const login = async (req, res, next) => {
+//   try {
+//     const { email, password } = req.body; // Extract email and password from request body
 
-    // Find the user in the database by email
+//     // Find the user in the database by email
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       // If no user is found, send an appropriate response
+//       return res.status(404).json({ success: false, msg: "Invalid Login" });
+//     }
+
+//     // Compare the provided password with the hashed password in the database
+//     bcrypt.compare(password, user.password, (err, isMatch) => {
+//       if (err) {
+//         console.error("Comparison error:", err);
+//         return res.status(500).json({ success: false, msg: "Server error" });
+//       }
+
+//       if (isMatch) {
+//         // req.session.user = { email: user.email, role: user.role };
+//         const token = setUser(user);
+
+//         req.session.user={
+//           email: user.email,
+//           isLoggedIn: true,
+//         }
+
+//         try {
+//            req.session.save();
+
+//         } catch (error) {
+//           console.error("Error setting session:", error);
+//           return next(new Error("Error creating user"));
+
+//         }
+
+//         // mailsend(req.body.email);
+
+//         // Password matches
+//         return res
+//           .status(200)
+//           .json({ success: true, msg: "Login Successful", user, token });
+//       } else {
+//         // Password does not match
+//         return res
+//           .status(401)
+//           .json({ success: false, msg: "Incorrect password" });
+//       }
+//     });
+//   } catch (error) {
+//     console.error("Error during login:", error);
+//     // Handle any other errors
+//     res.status(500).json({ success: false, msg: "Something went wrong" });
+//   }
+// };
+
+export const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
-      // If no user is found, send an appropriate response
       return res.status(404).json({ success: false, msg: "Invalid Login" });
     }
 
-    // Compare the provided password with the hashed password in the database
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-      if (err) {
-        console.error("Comparison error:", err);
-        return res.status(500).json({ success: false, msg: "Server error" });
-      }
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ success: false, msg: "Incorrect password" });
+    }
 
-      if (isMatch) {
-        // req.session.user = { email: user.email, role: user.role };
-        const token = setUser(user);
+    const token = setUser(user);
 
-        
-        
-        // mailsend(req.body.email);
+    req.session.user = {
+      user: user,
+      token: token,
+      isLoggedIn: true,
+    };
 
-        // Password matches
-        return res
-          .status(200)
-          .json({ success: true, msg: "Login Successful", user, token });
-      } else {
-        // Password does not match
-        return res
-          .status(401)
-          .json({ success: false, msg: "Incorrect password" });
-      }
+    try {
+      await req.session.save();
+      console.log("Session saved successfully");
+    } catch (error) {
+      console.error("Error setting session:", error);
+      return next(new Error("Error creating user session"));
+    }
+
+    return res.status(200).json({
+      success: true,
+      msg: "Login Successful",
+      user,
+      // token,
     });
   } catch (error) {
     console.error("Error during login:", error);
-    // Handle any other errors
     res.status(500).json({ success: false, msg: "Something went wrong" });
   }
 };
@@ -297,7 +356,6 @@ async function mailsend(email) {
 export const regis = async (req, res) => {
   try {
     const { fname, lname, email, password, address, phone, role } = req.body;
-    // const userData= new User(req.body);
     if (!email) {
       return res.status(404).json({ msg: "User not Create" });
     }
@@ -320,7 +378,7 @@ export const regis = async (req, res) => {
 };
 
 export const forgotpassword = async (req, res) => {
-    const { email } = req.body;
+  const { email } = req.body;
   const { otp } = req.body;
   const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
   if (response.length === 0 || otp !== response[0].otp) {
@@ -332,10 +390,9 @@ export const forgotpassword = async (req, res) => {
   return res.status(200).json({ msg: "OTP verified", email });
 };
 
-
 export const updatepassword = async (req, res) => {
   try {
-    const { email, newPassword } = req.body; 
+    const { email, newPassword } = req.body;
     if (!email || !newPassword) {
       return res.status(400).json({
         success: false,
@@ -368,122 +425,154 @@ export const updatepassword = async (req, res) => {
   }
 };
 
-
 export const uploadfile = async (req, res) => {
-  const file = req?.file;
   try {
-    if (!file) {
-      return res.status(400).json({ message: "File is required" });
+    if (!req.file) {
+      return res.status(400).json({ msg: "No file uploaded", status: "error" });
     }
-    return res.status(2000).json({msg:"File uploaded successfully", status: "success"});
+  //   if (!req.session?.user?._id) {
+  //     return res.status(401).json({ msg: "Unauthorized: User not logged in", status: "error" });
+  // }
+
+    const url = process.env.MONGO_URI;
+    console.log("Multer", req?.file?.filename);
+
+    const dbName = "crud";
+    const client = new MongoClient(url);
+
+    await client.connect();
+    console.log("Connected successfully to database");
+
+    const db = client.db(dbName);
+    const collection = db.collection("uploadedfiles"); // Collection to store filenames
+
+    const result = await collection.insertOne({
+      filename: req?.file?.filename,
+      // userId: req.session.user._id, // Convert to ObjectId
+      uploadedAt: new Date(),
+    });
+    await client.close();
+
+    res
+      .status(200)
+      .json({
+        msg: "File uploaded and filename stored successfully",
+        status: "success",
+      });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ msg: "Internal Server Error", status: "error" });
   }
-  catch (error) {
-    res.status(404).json(error);
-  }
-  };
+};
 
 export const getlimiteddata = async (req, res) => {
-  // console.log(req.user)
-   
   try {
-    let {count, search}= req.query;
-    count = parseInt(count)|| 5;
+    let { count, search } = req.query;
+    count = parseInt(count) || 5;
 
-    let filter={};
-    if(search){
+    let filter = {};
+    if (search) {
       filter = {
         $or: [
-            { fname: { $regex: search, $options: "i" } },  
-            { email: { $regex: search, $options: "i" } } 
-        ]
-    };
-
-    
-      
-      
+          { fname: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      };
     }
-    const totalItems = await User.countDocuments(); // Get total count
-    const userData = await User.find(filter).limit(count);
-    
-    res.status(200).json({userData, total: totalItems});
+    const totalItems = await User.countDocuments(filter); // Get total count
+    const userData = await User.find(filter).limit(count).populate({
+      path: "CreatedBy",
+      // select: "fname"
+    });
+
+    res.status(200).json({ userData, total: totalItems });
   } catch (error) {
-    res.status(404).json({msg:"Error fetching data"});
-    
+    console.log(error);
+    res.status(404).json({ msg: "Error fetching data" });
   }
-}
+};
 
-
-
-   
 export const createEvent = async (req, res) => {
+  const SCOPES = process.env.SCOPES;
+  const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY.replace(
+    new RegExp("\\\\n", "g"),
+    "\n"
+  );
+  const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL;
+  const GOOGLE_PROJECT_NUMBER = process.env.GOOGLE_PROJECT_NUMBER;
+  const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
 
-const SCOPES = process.env.SCOPES;
-const GOOGLE_PRIVATE_KEY= process.env.GOOGLE_PRIVATE_KEY.replace(new RegExp("\\\\n", "\g"), "\n")
-const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL;
-const GOOGLE_PROJECT_NUMBER = process.env.GOOGLE_PROJECT_NUMBER;
-const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
+  const jwtClient = new google.auth.JWT(
+    GOOGLE_CLIENT_EMAIL,
+    null,
+    GOOGLE_PRIVATE_KEY,
+    SCOPES
+  );
 
-const jwtClient = new google.auth.JWT(
-  GOOGLE_CLIENT_EMAIL,
-  null,
-  GOOGLE_PRIVATE_KEY,
-  SCOPES
-);
-
-const calendar = google.calendar({
-  version: 'v3',
-  project: GOOGLE_PROJECT_NUMBER,
-  auth: jwtClient
-});
+  const calendar = google.calendar({
+    version: "v3",
+    project: GOOGLE_PROJECT_NUMBER,
+    auth: jwtClient,
+  });
 
   var event = {
-    'summary': 'My first event!',
-    'location': 'Hyderabad,India',
-    'description': 'First event with nodeJS!',
-    'start': {
-      'dateTime': '2025-03-04T09:00:00-07:00',
-      'timeZone': 'Asia/Dhaka',
+    summary: "My first event!",
+    location: "Hyderabad,India",
+    description: "First event with nodeJS!",
+    start: {
+      dateTime: "2025-03-04T09:00:00-07:00",
+      timeZone: "Asia/Dhaka",
     },
-    'end': {
-      'dateTime': '2025-03-05T17:00:00-07:00',
-      'timeZone': 'Asia/Dhaka',
+    end: {
+      dateTime: "2025-03-05T17:00:00-07:00",
+      timeZone: "Asia/Dhaka",
     },
-    'attendees': [],
-    'reminders': {
-      'useDefault': false,
-      'overrides': [
-        {'method': 'email', 'minutes': 24 * 60},
-        {'method': 'popup', 'minutes': 10},
+    attendees: [],
+    reminders: {
+      useDefault: false,
+      overrides: [
+        { method: "email", minutes: 24 * 60 },
+        { method: "popup", minutes: 10 },
       ],
     },
   };
-  
+
   const auth = new google.auth.GoogleAuth({
     keyFile: process.env.keyFile,
-    scopes: 'https://www.googleapis.com/auth/calendar',
+    scopes: "https://www.googleapis.com/auth/calendar",
   });
-  auth.getClient().then(a=>{
-    calendar.events.insert({
-      auth:a,
-      calendarId: GOOGLE_CALENDAR_ID,
-      resource: event,
-    }, function(err, event) {
-      if (err) {
-        console.log('There was an error contacting the Calendar service: ' + err);
-        return;
+  auth.getClient().then((a) => {
+    calendar.events.insert(
+      {
+        auth: a,
+        calendarId: GOOGLE_CALENDAR_ID,
+        resource: event,
+      },
+      function (err, event) {
+        if (err) {
+          console.log(
+            "There was an error contacting the Calendar service: " + err
+          );
+          return;
+        }
+        console.log("Event created");
+
+        res.jsonp("Event successfully created!");
       }
-      console.log('Event created');
-      
-      res.jsonp("Event successfully created!");
+    );
+  });
+};
+
+export const logout = async (req, res) => {
+  if (req.session) {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ success: false, msg: "Logout failed" });
+      }
+      res.clearCookie("example"); // Ensure the session cookie is cleared
+      return res.status(200).json({ success: true, msg: "Logout successful" });
     });
-  })
-}
-
-
-  
-  
-  
-
-
-
- 
+  } else {
+    return res.status(400).json({ success: false, msg: "No active session" });
+  }
+};

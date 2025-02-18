@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import http ,{createServer} from 'http';
 import {Server} from 'socket.io';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 
 // import path from 'path';
 
@@ -46,8 +47,29 @@ const io = new Server(server, {
 
 
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({origin: 'http://localhost:3000', credentials: true}));
+
 dotenv.config();
+
+app.use(session({
+  name: 'sessionId',
+    secret: 'Amitansh',
+    
+    
+    // maxAge: 1000 * 60 * 60 * 1,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+        collectionName: 'sessions'
+    }),
+    cookie: {maxAge: 1000 * 60 * 60 * 1,
+    secure: false,
+    httpOnly: true,
+    }
+  }));
+
+
 app.use('/api',route);
 
 app.use(express.urlencoded({ extended: false }));
@@ -64,15 +86,9 @@ mongoose.connect(MONGO_URI).then(()=>{
     })
 })
 
-app.use(session({
-  secret: "Amitansh", // Replace with a strong, random secret
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 3600000 // Session duration in milliseconds (e.g., 1 hour)
-  }
-}));
 
+
+  
 
 
 
