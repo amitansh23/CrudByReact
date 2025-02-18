@@ -7,17 +7,6 @@ import multer from 'multer';
 import { getUser } from '../middleware/token.js';
 
 
-
-// const storage = multer.diskStorage({
-//     destination: function (req, file, cb) {
-//       return cb(null, "./uploads/");
-//     },
-//     filename: function (req, file, cb) {
-//       return cb(null, `${Date.now()}-${file.originalname}`);
-//     },
-//   });
-//   const upload = multer({ storage });
-
 var filename = null;
 var storage = multer.diskStorage({
     destination: function(req, file, cb) {
@@ -33,9 +22,7 @@ var upload = multer({
     storage: storage,
 });
 
-
-
-route.post('/create',getUser, create);
+route.post('/create', create);
 route.get('/getall',getUser,getall);
 route.get('/getbyname/:fname',getbyname);
 route.get('/getbyid/:id',getbyid);

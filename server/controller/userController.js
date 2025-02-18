@@ -9,9 +9,9 @@ import { fileURLToPath } from "url";
 import { DateTime } from "luxon";
 import OTP from "../model/otpModel.js";
 import { google } from "googleapis";
-import assert from "assert";
-import { MongoClient, ObjectId } from "mongodb";
-import csv from "csvtojson";
+// import assert from "assert";
+// import { MongoClient, ObjectId } from "mongodb";
+// import csv from "csvtojson";
 import userProfile from "../model/userProfile.js";
 
 export const create = async (req, res) => {
@@ -147,61 +147,6 @@ export const deleteuser = async (req, res) => {
   }
 };
 
-// export const login = async (req, res, next) => {
-//   try {
-//     const { email, password } = req.body; // Extract email and password from request body
-
-//     // Find the user in the database by email
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       // If no user is found, send an appropriate response
-//       return res.status(404).json({ success: false, msg: "Invalid Login" });
-//     }
-
-//     // Compare the provided password with the hashed password in the database
-//     bcrypt.compare(password, user.password, (err, isMatch) => {
-//       if (err) {
-//         console.error("Comparison error:", err);
-//         return res.status(500).json({ success: false, msg: "Server error" });
-//       }
-
-//       if (isMatch) {
-//         // req.session.user = { email: user.email, role: user.role };
-//         const token = setUser(user);
-
-//         req.session.user={
-//           email: user.email,
-//           isLoggedIn: true,
-//         }
-
-//         try {
-//            req.session.save();
-
-//         } catch (error) {
-//           console.error("Error setting session:", error);
-//           return next(new Error("Error creating user"));
-
-//         }
-
-//         // mailsend(req.body.email);
-
-//         // Password matches
-//         return res
-//           .status(200)
-//           .json({ success: true, msg: "Login Successful", user, token });
-//       } else {
-//         // Password does not match
-//         return res
-//           .status(401)
-//           .json({ success: false, msg: "Incorrect password" });
-//       }
-//     });
-//   } catch (error) {
-//     console.error("Error during login:", error);
-//     // Handle any other errors
-//     res.status(500).json({ success: false, msg: "Something went wrong" });
-//   }
-// };
 
 export const login = async (req, res, next) => {
   try {
