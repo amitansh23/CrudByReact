@@ -412,21 +412,35 @@ export const getlimiteddata = async (req, res) => {
   try {
     let { count, search } = req.query;
     count = parseInt(count) || 5;
+    const sortField = req.query.sortField || "Created_at";
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+    const role = req.query.role || "all";
+
 
     let filter = {};
     if (search) {
-      filter = {
+        const searchWords = search.split(" ").filter(word => word.trim() !== "");
+      filter.$or = searchWords.map(word => ({
         $or: [
-          { fname: { $regex: search, $options: "i" } },
-          { email: { $regex: search, $options: "i" } },
+          { fname: { $regex: word, $options: "i" } },
+          { email: { $regex: word, $options: "i" } },
         ],
-      };
+      }));
+      
     }
+
+    if(role && ["0","1","2"].includes(role)){
+      filter.role = parseInt(role);
+    }
+
+
+
+
     const totalItems = await User.countDocuments(filter); // Get total count
     const userData = await User.find(filter).limit(count).populate({
       path: "CreatedBy",
       // select: "fname"
-    });
+    }).sort({ [sortField]: sortOrder });
 
     res.status(200).json({ userData, total: totalItems });
   } catch (error) {
@@ -519,3 +533,5 @@ export const logout = async (req, res) => {
     return res.status(400).json({ success: false, msg: "No active session" });
   }
 };
+
+

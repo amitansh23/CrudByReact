@@ -9,7 +9,6 @@ import {Server} from 'socket.io';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 
-// import path from 'path';
 
 
 const app= express();
@@ -71,9 +70,7 @@ app.use(session({
 
 
 app.use('/api',route);
-
 app.use(express.urlencoded({ extended: false }));
-
 app.set("view engine", "ejs");
 
 const PORT = process.env.PORT || 7000;
@@ -85,16 +82,5 @@ mongoose.connect(MONGO_URI).then(()=>{
         
     })
 })
-
-
-
-  
-
-
-
-
-
-
-
 
 
