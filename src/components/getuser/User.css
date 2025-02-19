@@ -1,5 +1,5 @@
 .userTable{
-    width: 60%;
+    width: 90%;
     background-color: whitesmoke;
     box-shadow: 1px 1px 8px rgba(0 , 0, 0, 0.5);
     border-radius: 5px;
@@ -18,21 +18,28 @@
     cursor: pointer;
     text-decoration: none;
     font-weight: 500;
-    margin: 10%
-
+    margin: 10%;
+    margin-top: 2%;
+    margin-bottom: 1%;
+    width: 10%;
+    height: 10%;
+   
 
 }
 
 .userTable table{
     width: 100%;
-    margin-top: 30px;
+    margin-top: 4%;
     border-collapse: collapse;
 }
 
 .userTable table th{
     background-color: rosybrown;
     color: white;
-    padding: 10px;
+    padding: 15px;
+    margin: 20px ;
+    text-align: center;
+    
 }
 
 .userTable table tbody td{
@@ -55,12 +62,22 @@
 }
 
 .actionButton a{
-    
-    
-    background-color: black;
+    background-color: rgb(10, 10, 10);
     color: white;
     padding: 5px 10px;
     border-radius: 5px;
     margin: 0 10px;
+    width: 15%;
     
+}
+
+.dropbox{
+    position: relative;
+    display: inline-block;
+    margin: 5px;
+    padding-left: 15% ;
+    
+}
+.p{
+    position: relative;
 }
