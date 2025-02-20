@@ -13,6 +13,7 @@ import { io } from "socket.io-client";
 import { useEffect, useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import Calender from './components/EventSelector/calender';
+import Uploadprofile from './components/Uploadprofile';
 
 
 const socket = io("http://localhost:5000");
@@ -59,6 +60,8 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/registration" element={<RegistrationPage />} />
       <Route path="/calender" element={<Calender />} />
+      <Route path="/uploadfile" element={<Uploadprofile />} />
+
       
 
       
