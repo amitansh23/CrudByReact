@@ -4,15 +4,23 @@ import { setUser } from "../middleware/token.js";
 import nodemailer from "nodemailer";
 import fs from "fs";
 import { promisify } from "util";
-import path from "path";
 import { fileURLToPath } from "url";
 import { DateTime } from "luxon";
 import OTP from "../model/otpModel.js";
 import { google } from "googleapis";
-// import assert from "assert";
-// import { MongoClient, ObjectId } from "mongodb";
-// import csv from "csvtojson";
+
+import { sendWelcomeEmail } from "../utils/emailService.js";
+
 import userProfile from "../model/userProfile.js";
+import path from "path";
+import ejs from "ejs";
+import mailSender from "../utils/mailSender.js";
+
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 export const create = async (req, res) => {
   try {
@@ -38,17 +46,31 @@ export const create = async (req, res) => {
   }
 };
 
+
 export const registration = async (req, res) => {
   try {
     const { fname, lname, email, password, address, phone } = req.body;
-    // const userData= new User(req.body);
-    if (!email) {
-      return res.status(404).json({ msg: "User not Create" });
-    }
-    const saltRound = 10;
-    const hashpassword = await bcrypt.hash(password, saltRound);
+    const superAdminEmail = "amitanshchaurasiya@gmail.com"; // Change this to actual SuperAdmin Email
+
+    if (!fname || !lname || !email || !password || !address || !phone) {
+          return res.status(403).json({
+            success: false,
+            message: 'All fields are required',
+          });
+        }
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+          return res.status(400).json({
+            success: false,
+            message: 'User already Register',
+          });
+        }
 
     
+
+    const saltRound = 10;
+    const hashpassword = await bcrypt.hash(password, saltRound);
 
     const savedData = await User.create({
       fname,
@@ -60,11 +82,66 @@ export const registration = async (req, res) => {
     });
 
 
-    return res.status(200).json({ msg: "Successfull", savedData });
+
+    // **Path for Welcome Email Template**
+    const welcomeTemplatePath = path.join(__dirname, "../views/Welcomeuser.ejs");
+
+    // **Path for SuperAdmin Notification Email Template**
+    const adminTemplatePath = path.join(__dirname, "../views/AdminNotification.ejs");
+
+    // **Render Welcome Email for User**
+    ejs.renderFile(welcomeTemplatePath, { name: fname }, async (err, userHtml) => {
+      if (err) {
+        console.error("Error rendering User Welcome Email:", err);
+        return res.status(500).json({ msg: "Error generating user email template" });
+      }
+
+      // **Email Configuration for User**
+      const userMailOptions = {
+        from: '"Welcome Team" <officialcheck1234@gmail.com>',
+        to: email,
+        subject: "Welcome to Our Platform!",
+        html: userHtml,
+      };
+
+      // **Render Admin Notification Email**
+      ejs.renderFile(
+        adminTemplatePath,
+        { fname, lname, email, phone, address, createdAt: new Date().toLocaleString() },
+        async (err, adminHtml) => {
+          if (err) {
+            console.error("Error rendering Admin Email:", err);
+            return res.status(500).json({ msg: "Error generating admin email template" });
+          }
+
+          // **Email Configuration for SuperAdmin**
+          const adminMailOptions = {
+            from: '"New User Notification" <officialcheck1234@gmail.com>',
+            to: superAdminEmail,
+            subject: "New User Registered on the Platform",
+            html: adminHtml,
+          };
+
+          try {
+            // **Send Emails**
+            await sendWelcomeEmail(userMailOptions); // Send User Welcome Email
+            await sendWelcomeEmail(adminMailOptions); // Send SuperAdmin Notification Email
+
+            return res.status(200).json({ msg: "User Registered & Emails Sent", savedData });
+          } catch (emailError) {
+            console.error("Error sending emails:", emailError);
+            return res.status(500).json({ msg: "User registered, but emails not sent" });
+          }
+        }
+      );
+    });
   } catch (error) {
-    res.status(404).json(error);
+    console.error("Registration Error:", error);
+    res.status(500).json({ msg: "Internal Server Error" });
   }
 };
+
+
 
 export const getall = async (req, res) => {
   try {
@@ -189,7 +266,7 @@ export const login = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       msg: "Login Successful",
-      user,
+      user,profile
       // token,
     });
   } catch (error) {
@@ -391,7 +468,7 @@ export const uploadfile = async (req, res) => {
 
     const result = await userProfile.insertOne({
       filename: req?.file?.filename,
-      // userId: req.session.user._id, // Convert to ObjectId
+      userId: req.user._id, // Convert to ObjectId
       uploadedAt: new Date(),
     });
     

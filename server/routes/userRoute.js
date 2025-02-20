@@ -41,7 +41,7 @@ route.post('/signup', signup);
 
 route.post('/forgotpassword', forgotpassword);
 route.put('/updatepassword', updatepassword);
-route.post('/uploadfile',getUser, upload.single("file") ,uploadfile)
+route.post('/uploadfile', upload.single("file"),getUser ,uploadfile)
 route.get('/getlimiteddata', getUser,getlimiteddata)
 
 route.get('/createEvent', createEvent);
