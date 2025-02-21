@@ -2,10 +2,10 @@ import express from 'express';
 import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout} from '../controller/userController.js';
 const route = express.Router();
 import signup from '../controller/authController.js';
-import sendOTP from '../controller/otpController.js';
 import multer from 'multer';
 import { getUser } from '../middleware/token.js';
-
+import registrationotp from '../controller/RegistrationotpController.js';
+import forgetotp from '../controller/ForgetotpController.js';
 
 var filename = null;
 var storage = multer.diskStorage({
@@ -36,7 +36,8 @@ route.put('/backup/:id',backup);
 route.post('/registration',registration);
 route.post('/regis',regis)
 
-route.post('/sendotp',sendOTP);
+route.post('/forgetotp', forgetotp);
+route.post('/registrationotp', registrationotp);
 route.post('/signup', signup);
 
 route.post('/forgotpassword', forgotpassword);
@@ -44,7 +45,7 @@ route.put('/updatepassword', updatepassword);
 route.post('/uploadfile', upload.single("file"),getUser ,uploadfile)
 route.get('/getlimiteddata', getUser,getlimiteddata)
 
-route.get('/createEvent', createEvent);
+route.post('/createEvent',getUser, createEvent);
 
 route.post('/logout', logout);
 

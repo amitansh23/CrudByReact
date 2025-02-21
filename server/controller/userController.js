@@ -122,6 +122,7 @@ export const registration = async (req, res) => {
             html: adminHtml,
           };
 
+
           try {
             // **Send Emails**
             await sendWelcomeEmail(userMailOptions); // Send User Welcome Email
@@ -526,76 +527,144 @@ export const getlimiteddata = async (req, res) => {
   }
 };
 
+// export const createEvent = async (req, res) => {
+//   const SCOPES = process.env.SCOPES;
+//   const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY.replace(
+//     new RegExp("\\\\n", "g"),
+//     "\n"
+//   );
+//   const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL;
+//   const GOOGLE_PROJECT_NUMBER = process.env.GOOGLE_PROJECT_NUMBER;
+//   const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
+
+//   const jwtClient = new google.auth.JWT(
+//     GOOGLE_CLIENT_EMAIL,
+//     null,
+//     GOOGLE_PRIVATE_KEY,
+//     SCOPES
+//   );
+
+//   const calendar = google.calendar({
+//     version: "v3",
+//     project: GOOGLE_PROJECT_NUMBER,
+//     auth: jwtClient,
+//   });
+
+//   var event = {
+//     summary: "My first event!",
+//     location: "Hyderabad,India",
+//     description: "First event with nodeJS!",
+//     start: {
+//       dateTime: "2025-03-04T09:00:00-07:00",
+//       timeZone: "Asia/Dhaka",
+//     },
+//     end: {
+//       dateTime: "2025-03-05T17:00:00-07:00",
+//       timeZone: "Asia/Dhaka",
+//     },
+//     attendees: [],
+//     reminders: {
+//       useDefault: false,
+//       overrides: [
+//         { method: "email", minutes: 24 * 60 },
+//         { method: "popup", minutes: 10 },
+//       ],
+//     },
+//   };
+
+//   const auth = new google.auth.GoogleAuth({
+//     keyFile: process.env.keyFile,
+//     scopes: "https://www.googleapis.com/auth/calendar",
+//   });
+//   auth.getClient().then((a) => {
+//     calendar.events.insert(
+//       {
+//         auth: a,
+//         calendarId: GOOGLE_CALENDAR_ID,
+//         resource: event,
+//       },
+//       function (err, event) {
+//         if (err) {
+//           console.log(
+//             "There was an error contacting the Calendar service: " + err
+//           );
+//           return;
+//         }
+//         console.log("Event created");
+
+//         res.jsonp("Event successfully created!");
+//       }
+//     );
+//   });
+// };
+
+
+
 export const createEvent = async (req, res) => {
-  const SCOPES = process.env.SCOPES;
-  const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY.replace(
-    new RegExp("\\\\n", "g"),
-    "\n"
-  );
-  const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL;
-  const GOOGLE_PROJECT_NUMBER = process.env.GOOGLE_PROJECT_NUMBER;
-  const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
+  try {
+    const { eventName, location, description, startDateTime, endDateTime , usermail} = req.body;
 
-  const jwtClient = new google.auth.JWT(
-    GOOGLE_CLIENT_EMAIL,
-    null,
-    GOOGLE_PRIVATE_KEY,
-    SCOPES
-  );
+    if (!eventName || !startDateTime || !endDateTime || !description || !location) {
+      return res.status(400).json({ msg: "All fields are required" });
+    }
 
-  const calendar = google.calendar({
-    version: "v3",
-    project: GOOGLE_PROJECT_NUMBER,
-    auth: jwtClient,
-  });
+    const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n");
+    const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL;
+    const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
 
-  var event = {
-    summary: "My first event!",
-    location: "Hyderabad,India",
-    description: "First event with nodeJS!",
-    start: {
-      dateTime: "2025-03-04T09:00:00-07:00",
-      timeZone: "Asia/Dhaka",
-    },
-    end: {
-      dateTime: "2025-03-05T17:00:00-07:00",
-      timeZone: "Asia/Dhaka",
-    },
-    attendees: [],
-    reminders: {
-      useDefault: false,
-      overrides: [
-        { method: "email", minutes: 24 * 60 },
-        { method: "popup", minutes: 10 },
-      ],
-    },
-  };
-
-  const auth = new google.auth.GoogleAuth({
-    keyFile: process.env.keyFile,
-    scopes: "https://www.googleapis.com/auth/calendar",
-  });
-  auth.getClient().then((a) => {
-    calendar.events.insert(
-      {
-        auth: a,
-        calendarId: GOOGLE_CALENDAR_ID,
-        resource: event,
-      },
-      function (err, event) {
-        if (err) {
-          console.log(
-            "There was an error contacting the Calendar service: " + err
-          );
-          return;
-        }
-        console.log("Event created");
-
-        res.jsonp("Event successfully created!");
-      }
+    const jwtClient = new google.auth.JWT(
+      GOOGLE_CLIENT_EMAIL,
+      null,
+      GOOGLE_PRIVATE_KEY,
+      ["https://www.googleapis.com/auth/calendar.events"]
     );
-  });
+
+    await jwtClient.authorize(); // 🔥 Ensure client is authorized before making requests
+
+    const calendar = google.calendar({ version: "v3", auth: jwtClient });
+
+    const event = {
+      summary: eventName,
+      location: location,
+      description: description,
+      start: {
+        dateTime: startDateTime,
+        timeZone: "Asia/Kolkata",
+      },
+      end: {
+        dateTime: endDateTime,
+        timeZone: "Asia/Kolkata",
+      },
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: "email", minutes: 30 },
+          { method: "popup", minutes: 10 },
+        ],
+      },
+    //   attendees: [
+    //     {email: 'amitanshchaurasia@gmail.com'},
+    // ]
+      
+    };
+
+    
+    const response =  calendar.events.insert({
+      calendarId: GOOGLE_CALENDAR_ID,
+      resource: event,
+      sendUpdates: 'all', 
+    });
+
+    res.status(200).json({ msg: "Event successfully created!" });
+
+  } catch (error) {
+    console.error("Error creating event:", error);
+    res.status(500).json({ msg: "Failed to create event", error: error.message });
+  }
 };
+
+
+
 
 export const logout = async (req, res) => {
   if (req.session) {

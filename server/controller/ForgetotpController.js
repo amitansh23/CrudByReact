@@ -3,18 +3,17 @@ import OTP from '../model/otpModel.js';
 import User from '../model/userModel.js';
 
 
-const sendOTP = async (req, res) => {
+const forgetotp = async (req, res) => {
   try {
     const { email } = req.body;
     // Check if user is already present
     const checkUserPresent = await User.findOne({ email });
     // If user found with provided email
-    // if (!checkUserPresent) { // YE FORGOT PASSWORD KE LIYE HAI
-      if (checkUserPresent) {  // YE SIGNUP KE TIME OTP VERIFICATION KE LIYE HAI
+    if (!checkUserPresent) { // YE FORGOT PASSWORD KE LIYE HAI
+     
       return res.status(401).json({
         success: false,
-        message: 'User is already registered', // YE SIGNUP KE LIYE
-        // message: 'User not found' // YE FORGOT KE LIYE
+        message: 'User not exist' // YE FORGOT KE LIYE
       });
     }
     let otp = otpGenerator.generate(6, {
@@ -42,4 +41,4 @@ const sendOTP = async (req, res) => {
   }
 };
 
-export default sendOTP;
+export default forgetotp;
