@@ -21,8 +21,8 @@ const socket = io("http://localhost:5000");
 
 function App() {
 
-  const isLaggedIn = localStorage.getItem("userData");
-  console.log(isLaggedIn)
+  // const isLaggedIn = localStorage.getItem("userData");
+  // console.log(isLaggedIn)
 
   
 
@@ -59,7 +59,7 @@ function App() {
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/registration" element={<RegistrationPage />} />
-      <Route path="/calender" element={<Calender />} />
+      
       <Route path="/uploadfile" element={<Uploadprofile />} />
 
       
@@ -73,6 +73,8 @@ function App() {
             <Route path="/edit/:id" element={<Edit />} />
             <Route path="/add" element={<AddV />} />
             <Route path="/restore" element={<Restore />} />
+
+            <Route path="/calender" element={<Calender />} />
 
     </Route>
 
