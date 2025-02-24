@@ -1,6 +1,8 @@
 import express from 'express';
 import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout} from '../controller/userController.js';
 const route = express.Router();
+import { book, available_slots } from '../HotelController/hotel.js'; 
+
 import signup from '../controller/authController.js';
 import multer from 'multer';
 import { getUser } from '../middleware/token.js';
@@ -48,6 +50,17 @@ route.get('/getlimiteddata', getUser,getlimiteddata)
 route.post('/createEvent',getUser, createEvent);
 
 route.post('/logout', logout);
+
+
+
+
+
+
+
+
+route.post('/book', book);
+route.get('/available_slots', available_slots);
+
 
 
 export default route;
