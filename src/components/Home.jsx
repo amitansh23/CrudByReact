@@ -26,7 +26,7 @@ const clearStorage = async () => {
         method: "POST",
         credentials: "include", // Ensures session cookies are sent
       });
-  
+      
       const data = await response.json();
       if (data.success) {
         localStorage.clear(); // Remove user data from local storage

@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import Calender from './components/EventSelector/calender';
 import Uploadprofile from './components/Uploadprofile';
+import BookingSystem from './Hotel/booking';
 
 
 const socket = io("http://localhost:5000");
@@ -61,6 +62,7 @@ function App() {
       <Route path="/registration" element={<RegistrationPage />} />
       
       <Route path="/uploadfile" element={<Uploadprofile />} />
+      <Route path="/booking" element={<BookingSystem />} />
 
       
 
