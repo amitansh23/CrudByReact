@@ -32,8 +32,13 @@ function Login() {
       
 
       if (data.success) {
+        // console.log(data)
         localStorage.setItem("token", data?.token);
-        localStorage.setItem("userData", JSON.stringify(data.user));
+        localStorage.setItem("userData", JSON.stringify(data?.user));
+        localStorage.setItem("userProfile", JSON.stringify(data?.profile));
+        
+        
+
         socket.emit("new-user", email);
 
           

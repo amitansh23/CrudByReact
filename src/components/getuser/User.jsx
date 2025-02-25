@@ -19,6 +19,7 @@ const User = () => {
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedRole, setSelectedRole] = useState("");
 
+  
   const fetchData =useCallback(async (limit, query, field, order, role) => {
     // const token = localStorage.getItem("token");
 
@@ -76,6 +77,7 @@ try {
       setUser(JSON.parse(storedUser));
      
     }
+
     fetchData(count, search, sortField, sortOrder, selectedRole);
   }, [count, search, sortField, sortOrder, selectedRole, fetchData]);
 
@@ -126,6 +128,11 @@ try {
 
   return (
     <div className="userTable">
+
+
+
+
+
       <p>
         <strong>Total Items:</strong> {total}
       </p>
@@ -227,3 +234,6 @@ try {
 };
 
 export default User;
+
+
+
