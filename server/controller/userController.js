@@ -267,7 +267,7 @@ export const login = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       msg: "Login Successful",
-      user,profile
+      user: user,profile
       // token,
     });
   } catch (error) {
@@ -681,3 +681,15 @@ export const logout = async (req, res) => {
 };
 
 
+export const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const profile = await userProfile.findOne({ userId });
+
+    res.status(200).json({ profile });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ msg: "Internal Server Error" });
+  }
+};

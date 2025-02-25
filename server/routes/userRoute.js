@@ -1,5 +1,5 @@
 import express from 'express';
-import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout} from '../controller/userController.js';
+import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout, getUserProfile} from '../controller/userController.js';
 const route = express.Router();
 import { book, available_slots } from '../HotelController/hotel.js'; 
 
@@ -23,6 +23,9 @@ var storage = multer.diskStorage({
 var upload = multer({
     storage: storage,
 });
+
+
+
 
 route.post('/create', create);
 route.get('/getall',getUser,getall);
@@ -50,6 +53,9 @@ route.get('/getlimiteddata', getUser,getlimiteddata)
 route.post('/createEvent',getUser, createEvent);
 
 route.post('/logout', logout);
+
+
+route.get("/getUserProfile", getUserProfile);
 
 
 

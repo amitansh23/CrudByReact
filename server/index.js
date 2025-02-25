@@ -72,8 +72,7 @@ app.use(session({
 
 app.use('/api',route);
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
 
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
@@ -89,3 +88,14 @@ mongoose.connect(MONGO_URI).then(()=>{
 })
 
 
+
+
+app.use("/uploads", express.static("uploads")); 
+
+
+// Get the __dirname equivalent in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from the "uploads" directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
