@@ -55,7 +55,7 @@ route.post('/createEvent',getUser, createEvent);
 route.post('/logout', logout);
 
 
-route.get("/getUserProfile", getUserProfile);
+route.get("/getUserProfile",getUser, getUserProfile);
 
 
 

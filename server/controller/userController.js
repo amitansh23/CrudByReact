@@ -15,6 +15,7 @@ import userProfile from "../model/userProfile.js";
 import path from "path";
 import ejs from "ejs";
 import mailSender from "../utils/mailSender.js";
+import mongoose from "mongoose";
 
 
 
@@ -226,28 +227,78 @@ export const deleteuser = async (req, res) => {
 };
 
 
+// export const login = async (req, res, next) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     // Find user by email
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return res.status(404).json({ success: false, msg: "Invalid Login" });
+//     }
+
+//     // Compare passwords
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) {
+//       return res
+//         .status(401)
+//         .json({ success: false, msg: "Incorrect password" });
+//     }
+
+//     const token = setUser(user);
+
+//     req.session.user = {
+//       _id: user._id,
+//       user: user,
+//       token: token,
+//       isLoggedIn: true,
+//     };
+
+//     try {
+//       await req.session.save();
+//       console.log("Session saved successfully");
+//     } catch (error) {
+//       console.error("Error setting session:", error);
+//       return next(new Error("Error creating user session"));
+//     }
+
+//     const profile = await userProfile.findOne({ userId: user._id })
+//     console.log("Profile:", profile);
+      
+
+//     return res.status(200).json({
+//       success: true,
+//       msg: "Login Successful",
+//       user: user,profile
+//       // token,
+//     });
+//   } catch (error) {
+//     console.error("Error during login:", error);
+//     res.status(500).json({ success: false, msg: "Something went wrong" });
+//   }
+// };
+
+
+
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ success: false, msg: "Invalid Login" });
     }
 
-    // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res
-        .status(401)
-        .json({ success: false, msg: "Incorrect password" });
+      return res.status(401).json({ success: false, msg: "Incorrect password" });
     }
 
     const token = setUser(user);
 
     req.session.user = {
-      user: user,
+      _id: user._id, 
+      email: user.email,
       token: token,
       isLoggedIn: true,
     };
@@ -260,21 +311,25 @@ export const login = async (req, res, next) => {
       return next(new Error("Error creating user session"));
     }
 
-    const profile = await userProfile.findOne({ userId: user._id })
-    console.log("Profile:", profile);
-      
+   
+    const profile = await userProfile.findOne({ userId: new mongoose.Types.ObjectId(user._id) });
 
     return res.status(200).json({
       success: true,
       msg: "Login Successful",
-      user: user,profile
-      // token,
+      user,
+      profile,
     });
   } catch (error) {
     console.error("Error during login:", error);
     res.status(500).json({ success: false, msg: "Something went wrong" });
   }
 };
+
+
+
+
+
 
 export const softdelete = async (req, res) => {
   try {
@@ -683,9 +738,18 @@ export const logout = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
+
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ msg: "Unauthorized: User not found" });
+    }
+
     const userId = req.user._id;
+   
 
     const profile = await userProfile.findOne({ userId });
+    if (!profile) {
+      return res.status(404).json({ msg: "Profile not found" });
+    }
 
     res.status(200).json({ profile });
   } catch (error) {
