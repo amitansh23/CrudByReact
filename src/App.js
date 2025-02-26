@@ -15,6 +15,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Calender from './components/EventSelector/calender';
 import Uploadprofile from './components/Uploadprofile';
 import BookingSystem from './Hotel/booking';
+import Profile from './components/profile';
 
 
 const socket = io("http://localhost:5000");
@@ -63,7 +64,7 @@ function App() {
       
       <Route path="/uploadfile" element={<Uploadprofile />} />
       <Route path="/booking" element={<BookingSystem />} />
-
+      
       
 
       
@@ -77,6 +78,9 @@ function App() {
             <Route path="/restore" element={<Restore />} />
 
             <Route path="/calender" element={<Calender />} />
+
+            <Route path="/profile" element={<Profile />} />
+
 
     </Route>
 
