@@ -18,7 +18,7 @@ const RegisterPage = () => {
         password: "",
         address:"",
         phone: "",
-        role: "user"
+        birthday: "",
       });
     
       const [errors, setErrors] = useState({
@@ -70,6 +70,15 @@ const RegisterPage = () => {
           error = "Address cannot be empty";
         }
 
+        if (name === "birthday") {
+          const today = new Date().toISOString().split("T")[0]; 
+          if (!value) {
+            error = "Birthday is required!";
+          } else if (value > today) {  // Allow today's date, restrict future dates
+            error = "Birthday cannot be a future date!";
+          }
+        }
+
 
 
     
@@ -89,7 +98,7 @@ const RegisterPage = () => {
         setload(true)
         
 
-         await axios.post("http://localhost:8000/api/registration", formData)
+         await axios.post("http://localhost:8000/api/regis", formData)
         .then(res=>{
             toast.success(res.data.msg, 
                 {position: "top-center", autoClose: 2000}
@@ -148,6 +157,20 @@ const RegisterPage = () => {
           <input type="text" onChange={handleChange} id="phone" name="phone" placeholder="Enter your Phone Number" autoComplete="off" />
           {errors.phone && <p style={{ color: "red" }}>{errors.phone}</p>}
         </div>
+
+       
+        <div className="inputGroup">
+  <label htmlFor="birthday">Birthday</label>
+  <input 
+    type="date" 
+    id="birthday" 
+    name="birthday" 
+    value={formData.birthday} 
+    onChange={handleChange} 
+    required 
+  />
+  {errors.birthday && <p style={{ color: "red" }}>{errors.birthday}</p>}
+</div>
 
         <div className='inputGroup'>
         <button

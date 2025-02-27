@@ -23,7 +23,17 @@ const Uploadprofile = () => {
 
   // Handle File Change
   const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
+    const file = event.target.files[0];
+  if (!file) return;
+
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+  
+  if (!allowedTypes.includes(file.type)) {
+    alert("Only image files (JPEG, JPG, PNG) are allowed!");
+    return;
+  }
+
+  setFile(file);
   };
 
   // Handle File Upload

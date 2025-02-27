@@ -16,6 +16,8 @@ import Calender from './components/EventSelector/calender';
 import Uploadprofile from './components/Uploadprofile';
 import BookingSystem from './Hotel/booking';
 import Profile from './components/profile';
+import UploadMultipleImages from './components/uploadmultifile';
+import GetmultiFile from './components/getmultifile';
 
 
 const socket = io("http://localhost:5000");
@@ -80,6 +82,8 @@ function App() {
             <Route path="/calender" element={<Calender />} />
 
             <Route path="/profile" element={<Profile />} />
+            <Route path="/uploadmultifile" element={<UploadMultipleImages />} />
+            <Route path="/getmultifile" element={<GetmultiFile />} />
 
 
     </Route>
