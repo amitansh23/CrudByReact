@@ -1,5 +1,5 @@
 import express from 'express';
-import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout, getUserProfile} from '../controller/userController.js';
+import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout, getUserProfile, uploadMultiFiles, getMultiFiles} from '../controller/userController.js';
 const route = express.Router();
 import { book, available_slots } from '../HotelController/hotel.js'; 
 
@@ -9,6 +9,17 @@ import { getUser } from '../middleware/token.js';
 import registrationotp from '../controller/RegistrationotpController.js';
 import forgetotp from '../controller/ForgetotpController.js';
 
+
+
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files (JPEG, JPG, PNG) are allowed"), false);
+    }
+};
 var filename = null;
 var storage = multer.diskStorage({
     destination: function(req, file, cb) {
@@ -22,7 +33,9 @@ var storage = multer.diskStorage({
 
 var upload = multer({
     storage: storage,
+    fileFilter: fileFilter,
 });
+var multipleUpload = upload.array("files", 3);
 
 
 
@@ -48,6 +61,8 @@ route.post('/signup', signup);
 route.post('/forgotpassword', forgotpassword);
 route.put('/updatepassword', updatepassword);
 route.post('/uploadfile', upload.single("file"),getUser ,uploadfile)
+route.post('/uploadmultifile', multipleUpload, getUser, uploadMultiFiles);
+
 route.get('/getlimiteddata', getUser,getlimiteddata)
 
 route.post('/createEvent',getUser, createEvent);
@@ -56,6 +71,7 @@ route.post('/logout', logout);
 
 
 route.get("/getUserProfile",getUser, getUserProfile);
+route.get("/getmultifile",getUser, getMultiFiles);
 
 
 

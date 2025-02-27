@@ -10,6 +10,9 @@ import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import path from 'path';
 import { fileURLToPath } from "url";
+import cron from 'node-cron';
+import nodemailer from 'nodemailer'
+import userModel from './model/userModel.js';
 
 
 const app= express();
@@ -88,8 +91,6 @@ mongoose.connect(MONGO_URI).then(()=>{
 })
 
 
-
-
 app.use("/uploads", express.static("uploads")); 
 
 
@@ -97,5 +98,55 @@ app.use("/uploads", express.static("uploads"));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve static files from the "uploads" directory
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use('/uploads', express.static(path.join(path.resolve(), 'uploads')));
+
+
+
+
+
+const sendBirthdayEmail = async () => {
+  try {
+    const today = new Date()
+
+   
+    const usersWithBirthdayToday = await userModel.find({
+      $expr: {
+          $and: [
+              { $eq: [{ $dayOfMonth: "$birthday" }, today.getDate()] },
+              { $eq: [{ $month: "$birthday" }, today.getMonth() + 1] } 
+          ]
+      }
+  });
+
+  if (usersWithBirthdayToday.length > 0) {
+      let transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+              user: "officialcheck1234@gmail.com",
+              pass: process.env.SKEY
+          }
+      });
+
+      for (let user of usersWithBirthdayToday) {
+          let messageOptions = {
+              from: 'officialcheck1234@gmail.com',
+              to: user.email,
+              subject: `Happy Birthday, ${user.fname}! 🎉`,
+              text: `Dear ${user.fname},\n\nWishing you a very Happy Birthday! 🎂🎉 Have a wonderful day!\n\nBest Regards,\n Team`
+          };
+
+          await transporter.sendMail(messageOptions);
+          console.log(`Birthday email sent to: ${user.email}`);
+      }
+  } else {
+      console.log(" No birthdays today.");
+  }
+
+} catch (error) {
+  console.error("Error sending birthday emails:", error);
+}
+};
+// cron.schedule("49 13 * * *", sendBirthdayEmail);
+

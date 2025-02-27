@@ -437,7 +437,7 @@ async function mailsend(email) {
 
 export const regis = async (req, res) => {
   try {
-    const { fname, lname, email, password, address, phone, role } = req.body;
+    const { fname, lname, email, password, address, phone , birthday} = req.body;
     if (!email) {
       return res.status(404).json({ msg: "User not Create" });
     }
@@ -450,7 +450,8 @@ export const regis = async (req, res) => {
       password: hashpassword,
       address,
       phone,
-      role,
+      // role,
+      birthday
     });
 
     return res.status(200).json({ msg: "Successfull", savedData });
@@ -540,6 +541,66 @@ export const uploadfile = async (req, res) => {
     res.status(500).json({ msg: "Internal Server Error", status: "error" });
   }
 };
+
+
+export const uploadMultiFiles = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ msg: "No files uploaded", status: "error" });
+    }
+
+    console.log("Multer Files:", req.files.map(file => file.filename));
+
+    const uploadedFiles = req.files.map(file => ({
+      filename: file.filename,
+      userId: req.user._id,
+      uploadedAt: new Date(),
+    }));
+
+    await userProfile.insertMany(uploadedFiles);
+
+    res.status(200).json({
+      msg: "Files uploaded and stored successfully",
+      status: "success",
+      uploadedFiles
+    });
+
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ msg: "Internal Server Error", status: "error" });
+  }
+};
+
+
+export const getMultiFiles = async (req, res) => {
+    try {
+      const userId = req.user._id; // ✅ Get user ID from session
+  
+      const images = await userProfile.find({ userId });
+  
+      if (!images || images.length === 0) {
+        return res.status(404).json({ msg: "No images found", success: false });
+      }
+  
+      // ✅ Create URLs for all images
+      const imageUrls = images.map(img => `http://localhost:8000/uploads/${img.filename}`);
+  
+      res.status(200).json({ images: imageUrls });
+  
+    } catch (error) {
+      console.error("Error fetching user images:", error);
+      res.status(500).json({ msg: "Internal Server Error" });
+    }
+};
+
+
+
+
+
+
+
+
+
 
 export const getlimiteddata = async (req, res) => {
   try {

@@ -6,14 +6,14 @@ export const book = async(req, res) =>{
     try {
         const { hotel, date, timeSlot, userId } = req.body;
     
-        // **Check if the slot is already booked**
+        
         const existingBooking = await Booking.findOne({ hotel, date, timeSlot });
     
         if (existingBooking) {
           return res.status(400).json({ message: "This slot is already booked!" });
         }
     
-        // **Book the slot**
+     
         const newBooking = await Booking.create({ hotel, date, timeSlot, bookedBy: userId });
     
         res.status(201).json({ message: "Booking successful!", booking: newBooking });
