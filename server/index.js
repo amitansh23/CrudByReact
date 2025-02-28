@@ -150,3 +150,48 @@ const sendBirthdayEmail = async () => {
 };
 // cron.schedule("49 13 * * *", sendBirthdayEmail);
 
+
+
+
+const sendUnsubscribeEmails = async () => {
+  try {
+    const users = await userModel.find({ unsubscribe: false });
+
+    if (users.length > 0) {
+      let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "officialcheck1234@gmail.com",
+          pass: process.env.SKEY,
+        },
+      });
+
+      for (let user of users) {
+        const unsubscribeLink = `http://localhost:8000/api/unsubscribe/${user._id}`;
+
+        let messageOptions = {
+          from: "officialcheck1234@gmail.com",
+          to: user.email,
+          subject: "Stay with Us or Unsubscribe",
+          html: `<p>Hey ${user.fname},</p>
+                 <a href="${unsubscribeLink}">Unsubscribe</a>`,
+        };
+
+        await transporter.sendMail(messageOptions);
+        console.log(`Unsubscribe email sent to: ${user.email}`);
+      }
+    } else {
+      console.log("No users to send unsubscribe emails.");
+    }
+  } catch (error) {
+    console.error("Error sending unsubscribe emails:", error);
+  }
+};
+
+
+// cron.schedule("*/1 * * * *", sendUnsubscribeEmails);
+
+
+
+
+

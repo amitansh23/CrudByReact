@@ -6,9 +6,9 @@ import User from '../model/userModel.js';
 const forgetotp = async (req, res) => {
   try {
     const { email } = req.body;
-    // Check if user is already present
+    
     const checkUserPresent = await User.findOne({ email });
-    // If user found with provided email
+    
     if (!checkUserPresent) { // YE FORGOT PASSWORD KE LIYE HAI
      
       return res.status(401).json({

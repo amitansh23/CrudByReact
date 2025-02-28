@@ -437,7 +437,7 @@ async function mailsend(email) {
 
 export const regis = async (req, res) => {
   try {
-    const { fname, lname, email, password, address, phone , birthday} = req.body;
+    const { fname, lname, email, password, address, phone , birthday, unsubscribe} = req.body;
     if (!email) {
       return res.status(404).json({ msg: "User not Create" });
     }
@@ -451,7 +451,8 @@ export const regis = async (req, res) => {
       address,
       phone,
       // role,
-      birthday
+      birthday,
+      unsubscribe,
     });
 
     return res.status(200).json({ msg: "Successfull", savedData });
@@ -816,5 +817,14 @@ export const getUserProfile = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user profile:", error);
     res.status(500).json({ msg: "Internal Server Error" });
+  }
+};
+
+export const unsubscribe = async(req,res)=> {
+  try {
+      await User.findByIdAndUpdate(req.params.id, { unsubscribe: true });
+      res.send("You have successfully unsubscribed.");
+  } catch (error) {
+      res.status(500).send("Error unsubscribing.");
   }
 };

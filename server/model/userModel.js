@@ -44,6 +44,11 @@ const userSchema = new Schema({
     birthday: { type: Date,
         //  required: true 
     },
+    unsubscribe:{
+        type:Boolean,
+        default:false
+
+    },
     Created_at: {
         type: String
     },
