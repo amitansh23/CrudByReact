@@ -62,6 +62,12 @@ const clearStorage = async () => {
             <Nav.Link href="superadminregistration">S Registration</Nav.Link>
             <Nav.Link href="registration">A Registration</Nav.Link>
             <Nav.Link href="user">User</Nav.Link>
+            <Nav.Link href="calender">Calender</Nav.Link>
+            <Nav.Link href="chat">Chat</Nav.Link>
+            <Nav.Link href="uploadmultifile">Uploadfile</Nav.Link>
+            <Nav.Link href="profile">Profile</Nav.Link>
+            <Nav.Link href="getmultifile">Album</Nav.Link>
+            <Nav.Link href="uploadfile">Upload profile</Nav.Link>
             
 
             {!user ? (

@@ -9,8 +9,8 @@ import RegistrationPage from './components/Auth/registration';
 import Restore from './components/getuser/restore';
 import Home from './components/Home'
 import SuperAdminRegistration from './components/Roles/SuperAdminRegistration';
-import { io } from "socket.io-client";
-import { useEffect, useState } from 'react';
+// import { io } from "socket.io-client";
+// import { useEffect, useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import Calender from './components/EventSelector/calender';
 import Uploadprofile from './components/Uploadprofile';
@@ -18,9 +18,11 @@ import BookingSystem from './Hotel/booking';
 import Profile from './components/profile';
 import UploadMultipleImages from './components/uploadmultifile';
 import GetmultiFile from './components/getmultifile';
+import Chat from './components/Chat';
+import AdminDashboard from './components/Admin/admindashboard';
 
 
-const socket = io("http://localhost:5000");
+
 
 
 function App() {
@@ -28,27 +30,6 @@ function App() {
   // const isLaggedIn = localStorage.getItem("userData");
   // console.log(isLaggedIn)
 
-  
-
-  const [connected, setConnected] = useState(false);
-
-  useEffect(() => {
-    socket.on("connect", () => {
-      console.log("Connected to server:", socket.id);
-      setConnected(true);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("Disconnected from server");
-      setConnected(false);
-    });
-
-    return () => {
-      socket.off("connect");
-      socket.off("disconnect");
-    };
-  }, []);
-  console.log(connected ? "Connected to Server ✅" : "Not Connected ❌")
 
   return (
 
@@ -57,15 +38,14 @@ function App() {
     <Home />
        
     <Routes>
-
-      
-    
+  
       <Route path="/" element={<Login />} />
-      <Route path="/login" element={<Login />} />
+     
       <Route path="/registration" element={<RegistrationPage />} />
       
       <Route path="/uploadfile" element={<Uploadprofile />} />
       <Route path="/booking" element={<BookingSystem />} />
+      <Route path="/login" element={<Login />} />
       
       
 
@@ -73,6 +53,8 @@ function App() {
 
       
      <Route element={<ProtectedRoute />}>
+
+     
             <Route path="/superadminregistration" element={<SuperAdminRegistration />} />
             <Route path="/user" element={<User />} />
             <Route path="/edit/:id" element={<Edit />} />
@@ -84,6 +66,9 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/uploadmultifile" element={<UploadMultipleImages />} />
             <Route path="/getmultifile" element={<GetmultiFile />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/admindashboard" element={<AdminDashboard />} />
+
 
 
     </Route>

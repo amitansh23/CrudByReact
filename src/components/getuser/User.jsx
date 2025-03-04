@@ -5,6 +5,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { DateTime } from "luxon";
+import { io } from "socket.io-client";
 
 const User = () => {
 
@@ -48,6 +49,34 @@ try {
   
   
 }},[navigate]);
+
+
+const [adminList, setAdminList] = useState([]); // ✅ Store Admins List
+
+
+const fetchAdmins = useCallback(async () => {
+  try {
+    const res = await axios.get(`http://localhost:8000/api/getusers?roles=1`, {
+      withCredentials: true
+    });
+
+    setAdminList(res?.data?.users);
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+  }
+}, []);
+
+useEffect(() => {
+  fetchAdmins();
+}, [fetchAdmins]);
+
+
+
+const socket = io("http://localhost:8000",{ 
+  transports: ["websocket", "polling"], 
+  withCredentials: true,
+  autoConnect: false 
+});
   
 
   const toggleSort = (field) => {
@@ -77,9 +106,48 @@ try {
       setUser(JSON.parse(storedUser));
      
     }
+    
 
     fetchData(count, search, sortField, sortOrder, selectedRole);
   }, [count, search, sortField, sortOrder, selectedRole, fetchData]);
+
+
+const [socketId, setSocketId] = useState("");
+
+// ✅ Ensure Socket Connects Once & Updates socketId
+useEffect(() => {
+  if(!socketId){
+  socket.connect(); // ✅ Connect to WebSocket Server
+
+  socket.on("connect", () => {
+    console.log("✅ Connected to WebSocket, Socket ID:", socket.id);
+    setSocketId(socket.id); // ✅ Update socketId in state
+  });
+
+  // socket.on("disconnect", () => {
+  //   console.log("🔴 Disconnected from WebSocket");
+  //   setSocketId(""); // ✅ Clear socket ID on disconnect
+  // });
+  socket.emit("join",{userId: user?._id});
+  socket.on("msg",(data)=>{
+    console.log(data);
+  })
+  socket.on("privateMessage",(data)=>{
+    console.log(data);
+    new window.Notification(`${data}`)
+  })
+}
+
+  
+
+  return () => {
+    socket.off("connect");
+    socket.off("disconnect");
+  };
+}, [user, socketId,socket]);
+
+  
+
 
   const DELETE = async (userId) => {
     Swal.fire({
@@ -110,7 +178,7 @@ try {
         toast.success(res.data.msg, { positioin: "top-center" });
         setTotal((prevTotal) => prevTotal - 1);
 
-        // fetchData(count, search);
+        
       })
       .catch((error) => {
         console.log(error);
@@ -136,6 +204,9 @@ try {
       <p>
         <strong>Total Items:</strong> {total}
       </p>
+      <p>
+        <strong>SocketId:</strong> {socketId}
+      </p>
       <h2>{user ? `${user.fname} ${user.lname}` : ""}</h2>
       <Link to={"/add"} className="addButton">
         Add User
@@ -159,6 +230,22 @@ try {
         <option value="2">User</option>
       </select>
       </div>
+
+      <div className="dropbox">
+  <label><strong>Chat with:</strong></label>
+  <select>
+    <option value="">Admins</option>
+    {adminList.map((admin) => (
+      <option key={admin._id} value={admin._id}>
+        {admin.fname} {admin.lname} ({admin.email})
+      </option>
+    ))}
+  </select>
+</div>
+
+
+
+
 
       <table border={1} cellPadding={15} cellSpacing={8}>
         <thead>
@@ -236,4 +323,4 @@ try {
 export default User;
 
 
-
+  
