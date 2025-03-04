@@ -1,5 +1,5 @@
 import express from 'express';
-import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout, getUserProfile, uploadMultiFiles, getMultiFiles,unsubscribe} from '../controller/userController.js';
+import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout, getUserProfile, uploadMultiFiles, getMultiFiles,unsubscribe, getUsersByRole} from '../controller/userController.js';
 const route = express.Router();
 import { book, available_slots } from '../HotelController/hotel.js'; 
 
@@ -85,6 +85,8 @@ route.get('/available_slots', available_slots);
 
 
 route.get('/unsubscribe/:id', unsubscribe); 
+route.get("/getusers", getUsersByRole); // ✅ API Route
+
 
 
 

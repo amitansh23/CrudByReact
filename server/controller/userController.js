@@ -16,6 +16,7 @@ import path from "path";
 import ejs from "ejs";
 import mailSender from "../utils/mailSender.js";
 import mongoose from "mongoose";
+import { io } from "../index.js";
 
 
 
@@ -227,56 +228,10 @@ export const deleteuser = async (req, res) => {
 };
 
 
-// export const login = async (req, res, next) => {
-//   try {
-//     const { email, password } = req.body;
 
-//     // Find user by email
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       return res.status(404).json({ success: false, msg: "Invalid Login" });
-//     }
 
-//     // Compare passwords
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       return res
-//         .status(401)
-//         .json({ success: false, msg: "Incorrect password" });
-//     }
 
-//     const token = setUser(user);
 
-//     req.session.user = {
-//       _id: user._id,
-//       user: user,
-//       token: token,
-//       isLoggedIn: true,
-//     };
-
-//     try {
-//       await req.session.save();
-//       console.log("Session saved successfully");
-//     } catch (error) {
-//       console.error("Error setting session:", error);
-//       return next(new Error("Error creating user session"));
-//     }
-
-//     const profile = await userProfile.findOne({ userId: user._id })
-//     console.log("Profile:", profile);
-      
-
-//     return res.status(200).json({
-//       success: true,
-//       msg: "Login Successful",
-//       user: user,profile
-//       // token,
-//     });
-//   } catch (error) {
-//     console.error("Error during login:", error);
-//     res.status(500).json({ success: false, msg: "Something went wrong" });
-//   }
-// };
 
 
 
@@ -310,8 +265,6 @@ export const login = async (req, res, next) => {
       console.error("Error setting session:", error);
       return next(new Error("Error creating user session"));
     }
-
-   
     const profile = await userProfile.findOne({ userId: new mongoose.Types.ObjectId(user._id) });
 
     return res.status(200).json({
@@ -435,29 +388,46 @@ async function mailsend(email) {
   console.log("Message sent: %s", info.messageId);
 }
 
+
+
 export const regis = async (req, res) => {
   try {
-    const { fname, lname, email, password, address, phone , birthday, unsubscribe} = req.body;
-    if (!email) {
-      return res.status(404).json({ msg: "User not Create" });
+    const { fname, lname, email, password, address, phone, birthday, unsubscribe, role } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, msg: "Email and Password are required" });
     }
+
+    // ✅ Check if the user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ success: false, msg: "User already exists" });
+    }
+
+    // ✅ Hash password
     const saltRound = 10;
     const hashpassword = await bcrypt.hash(password, saltRound);
-    const savedData = await User.create({
+
+    // ✅ Create new user
+    const newUser = new User({
       fname,
       lname,
       email,
       password: hashpassword,
       address,
       phone,
-      // role,
+      role: role || 2, // ✅ Default role: User (2)
       birthday,
       unsubscribe,
     });
 
-    return res.status(200).json({ msg: "Successfull", savedData });
+    await newUser.save();
+
+    return res.status(201).json({ success: true, msg: "User registered successfully", user: newUser });
+
   } catch (error) {
-    res.status(404).json(error);
+    console.error("❌ Registration Error:", error);
+    return res.status(500).json({ success: false, msg: "Internal Server Error" });
   }
 };
 
@@ -828,3 +798,25 @@ export const unsubscribe = async(req,res)=> {
       res.status(500).send("Error unsubscribing.");
   }
 };
+
+
+
+export const getUsersByRole = async (req, res) => {
+  try {
+    const { roles } = req.query;
+
+    if (!roles) {
+      return res.status(400).json({ success: false, msg: "Roles parameter is required" });
+    }
+
+    const roleArray = roles.split(",").map(Number);
+
+    const users = await User.find({ role: { $in: roleArray } }).select("fname lname email role");
+
+    return res.status(200).json({ success: true, users });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return res.status(500).json({ success: false, msg: "Internal Server Error" });
+  }
+};
+
