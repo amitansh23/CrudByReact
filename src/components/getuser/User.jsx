@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { DateTime } from "luxon";
 import { io } from "socket.io-client";
+import Chat from "../Chat";
 
 const User = () => {
 
@@ -19,6 +20,13 @@ const User = () => {
   const [sortField, setSortField] = useState("Created_at");
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedRole, setSelectedRole] = useState("");
+
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [receiverSocketId, setReceiverSocketId] = useState("");
+  const [chatOpen, setChatOpen] = useState(false);
+
+  
+
 
   
   const fetchData =useCallback(async (limit, query, field, order, role) => {
@@ -58,7 +66,9 @@ const fetchAdmins = useCallback(async () => {
   try {
     const res = await axios.get(`http://localhost:8000/api/getusers?roles=1`, {
       withCredentials: true
-    });
+      
+    }
+  );
 
     setAdminList(res?.data?.users);
   } catch (error) {
@@ -68,6 +78,7 @@ const fetchAdmins = useCallback(async () => {
 
 useEffect(() => {
   fetchAdmins();
+  
 }, [fetchAdmins]);
 
 
@@ -117,17 +128,19 @@ const [socketId, setSocketId] = useState("");
 // ✅ Ensure Socket Connects Once & Updates socketId
 useEffect(() => {
   if(!socketId){
-  socket.connect(); // ✅ Connect to WebSocket Server
+  socket.connect(); 
 
   socket.on("connect", () => {
     console.log("✅ Connected to WebSocket, Socket ID:", socket.id);
-    setSocketId(socket.id); // ✅ Update socketId in state
+    setSocketId(socket.id); 
   });
 
-  // socket.on("disconnect", () => {
-  //   console.log("🔴 Disconnected from WebSocket");
-  //   setSocketId(""); // ✅ Clear socket ID on disconnect
-  // });
+  socket.on("updatedata",(data)=>{
+    new window.Notification(data)
+    console.log("updatedata");
+  })
+
+  
   socket.emit("join",{userId: user?._id});
   socket.on("msg",(data)=>{
     console.log(data);
@@ -141,10 +154,28 @@ useEffect(() => {
   
 
   return () => {
-    socket.off("connect");
-    socket.off("disconnect");
+    // socket.off("connect");
+    // socket.off("disconnect");
   };
 }, [user, socketId,socket]);
+
+
+
+const handleAdminSelect = async (e) => {
+  const adminId = e.target.value;
+  setSelectedAdmin(adminId);
+
+  if(adminId){
+    try {
+      const response = await axios.get(`http://localhost:8000/api/admin/${adminId}`);
+      setReceiverSocketId(response.data.socketId);
+      setChatOpen(true);
+      
+    } catch (error) {
+      console.error("Error fetching receiver socket ID:", error);
+      
+    }
+  }}
 
   
 
@@ -233,7 +264,7 @@ useEffect(() => {
 
       <div className="dropbox">
   <label><strong>Chat with:</strong></label>
-  <select>
+  <select onChange={handleAdminSelect} >
     <option value="">Admins</option>
     {adminList.map((admin) => (
       <option key={admin._id} value={admin._id}>
@@ -243,6 +274,10 @@ useEffect(() => {
   </select>
 </div>
 
+{chatOpen && selectedAdmin && receiverSocketId && (
+        <Chat userId={user._id} receiverId={receiverSocketId} />
+      )}
+ 
 
 
 
@@ -320,7 +355,8 @@ useEffect(() => {
   );
 };
 
+
 export default User;
 
 
-  
+   

@@ -4,6 +4,18 @@ import "../adduser/add.css";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { io } from "socket.io-client";
+
+
+
+
+const socket = io("http://localhost:8000",{ 
+  transports: ["websocket", "polling"], 
+  withCredentials: true,
+  autoConnect: false 
+});
+
+
 
 const Edit = () => {
   const users = {
@@ -35,9 +47,21 @@ const Edit = () => {
 
   const submitForm = async (e) => {
     e.preventDefault();
+    const loggedInUser = JSON.parse(localStorage.getItem("userData"));
+    const updatedByEmail = loggedInUser?.email || "Unknown";
+    
+    
     await axios
-      .put(`http://localhost:8000/api/update/${id}`, user)
+      .put(`http://localhost:8000/api/update/${id}`,{...user, updatedByEmail})
       .then((res) => {
+        socket.connect();
+socket.on("connect", () => {
+  console.log("✅ Connected to WebSocket, Socket ID:", socket.id);
+});
+
+  socket.emit("Update",{userid: id})
+
+
         toast.success(res.data.msg, { position: "top-right" });
         navigate("/");
       })

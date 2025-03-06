@@ -9,6 +9,13 @@ const socket = io("http://localhost:8000", {
   autoConnect: false 
 });
 
+socket.connect(); 
+        
+socket.on("connect", () => {
+  console.log("✅ Connected to WebSocket, Socket ID:", socket.id);
+  
+});
+
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -38,7 +45,10 @@ function Login() {
         localStorage.setItem("userProfile",JSON.stringify(data?.profile))
 
         // ✅ Emit "join" event only after successful login
-        socket.emit("join", { userId: data.user._id });
+        // socket.emit("join", { userId: data.user._id });
+       
+         
+        socket.emit("userLoggedIn",{user: data?.user?.fname});
 
         console.log("🎉 User Logged In:", data.user.fname, "- Socket ID:", socket.id);
 

@@ -10,27 +10,40 @@ const AdminDashboard = () => {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("userData"));
 
-    if (storedUser?.role === 1) {
+    // if (storedUser?.role === 1) {
       socket.connect();
       
       socket.on("connect", () => {
         console.log("✅ Admin connected:", socket.id);
         socket.emit("admin-join", storedUser._id); // ✅ Send Admin ID
       });
+      socket.on("msg" , (data)=>{
+        console.log(data);
+
+      })
+      socket.on("hii" , (data)=>{
+        console.log(data);
+
+      })
+      socket.on("kaiseho" , (data)=>{
+        console.log(data);
+
+      })
 
       // ✅ Notification When User Logs In
-      socket.on("userLoggedIn", (data) => {
-        console.log("🔔 User Logged In:", data.msg);
-        alert(`User Logged In: ${data.msg}`);
+      socket.on("login", (data) => {
+        new window.Notification(data.name);
+        console.log(data.name);
+        // alert(`User Logged In: ${data._id}`);
       });
 
       return () => {
-        socket.off("connect");
-        socket.off("userLoggedIn");
-        socket.disconnect();
+        // socket.off("connect");
+        // socket.off("userLoggedIn");
+        // socket.disconnect();
       };
     }
-  }, []);
+  , []);
 
   return (
     <div>

@@ -1,48 +1,167 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 
-const socket = io("http://localhost:8000", { autoConnect: false });
+const Chat = () => {
+  const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState("");
+  const [user, setUser] = useState(null);
+  const [receiverSocketId, setReceiverSocketId] = useState("");
+  const [selectedReceiver, setSelectedReceiver] = useState(null);
+  const [userList, setUserList] = useState([]);
+  const [chatOpen, setChatOpen] = useState(false);
 
-const Chat = ({ userId, receiverId }) => {
-    const [messages, setMessages] = useState([]);
-    const [message, setMessage] = useState("");
+  const socketRef = useRef(null);
 
-    useEffect(() => {
-        socket.emit("join", { userId });
+  useEffect(() => {
+    const storedUser = localStorage.getItem("userData");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
-        socket.on("new-message", (data) => {
-            setMessages((prev) => [...prev, data]);
-        });
+  // Fetch users based on role
+  const fetchUsersByRole = useCallback(async () => {
+    if (!user) return;
 
-        return () => socket.disconnect();
-    }, [userId]);
+    try {
+      let roleQuery = "";
+      if (user?.role === 2) {
+        roleQuery = "1"; // Users see Admins
+      } else if (user?.role === 1) {
+        roleQuery = "2"; // Admins see Users
+      } else if (user?.role === 0) {
+        roleQuery = "1,2"; // SuperAdmins see both Admins & Users
+      }
 
-    const sendMessage = async () => {
-        if (message.trim()) {
-            socket.emit("private-message", { senderId: userId, receiverId, message });
-            setMessages([...messages, { senderId: userId, message }]);
-            setMessage("");
+      const res = await axios.get(`http://localhost:8000/api/getusers?roles=${roleQuery}`, {
+        withCredentials: true,
+      });
 
-            // Save in database (optional)
-            await axios.post("http://localhost:3000/api/messages", { senderId: userId, receiverId, message });
-        }
-    };
+      setUserList(res?.data?.users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  }, [user]);
 
-    return (
+  useEffect(() => {
+    fetchUsersByRole();
+  }, [fetchUsersByRole]);
+
+  // Setup WebSocket Connection
+  useEffect(() => {
+    if (!socketRef.current) {
+      socketRef.current = io("http://localhost:8000", {
+        autoConnect: false,
+        transports: ["websocket", "polling"],
+        withCredentials: true,
+      });
+
+      socketRef.current.connect();
+
+      socketRef.current.on("connect", () => {
+        console.log("Connected to WebSocket:", socketRef.current.id);
+      });
+
+      socketRef.current.on("new-message", (data) => {
+        setMessages((prev) => [...prev, data]);
+      });
+
+      return () => {
+        // socketRef.current.disconnect();
+      };
+    }
+  }, []);
+
+  // Handle selection of a user or admin
+  const handleUserSelect = async (e) => {
+    const receiverId = e.target.value;
+    setSelectedReceiver(receiverId);
+
+    if (receiverId) {
+      try {
+        const response = await axios.get(`http://localhost:8000/api/getbyid/${receiverId}`);
+        console.log("ReceiverSocket ID:", response.data.socketId);
+        setReceiverSocketId(response.data.socketId);
+        setChatOpen(true);
+      } catch (error) {
+        console.error("Error fetching receiver socket ID:", error);
+      }
+    }
+  };
+
+  // Send message
+  const sendMessage = async () => {
+    if (message.trim() && user?._id && receiverSocketId) {
+      socketRef.current.emit("private-message", {
+        senderId: user._id,
+        receiverId: selectedReceiver,
+        message,
+      });
+
+      setMessages([...messages, { senderId: user._id, message }]);
+      setMessage("");
+
+      await axios.post("http://localhost:8000/api/messages", {
+        senderId: user._id,
+        receiverId: selectedReceiver,
+        message,
+      });
+    }
+  };
+
+  return (
+    <div>
+      <h2>Chat</h2>
+     
+
+      <div className="dropbox">
+        <label>Chat with:</label>
+        <select onChange={handleUserSelect}>
+          <option value="">Select a {user?.role === 1 ? "User" : "Admin"}</option>
+          {userList.map((chatUser) => (
+            <option key={chatUser._id} value={chatUser._id}>
+              {chatUser.fname} {chatUser.lname} ({chatUser.email})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {chatOpen && user && selectedReceiver && receiverSocketId && (
         <div>
-            <h2>Chat</h2>
-            <div style={{ border: "1px solid black", height: "300px", overflowY: "scroll" }}>
-                {messages.map((msg, index) => (
-                    <div key={index} style={{ textAlign: msg.senderId === userId ? "right" : "left" }}>
-                        <p>{msg.message}</p>
-                    </div>
-                ))}
-            </div>
-            <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} />
-            <button onClick={sendMessage}>Send</button>
+          <div
+            style={{
+              border: "1px solid black",
+              height: "300px",
+              overflowY: "scroll",
+              margin: "10px 0",
+              padding: "10px",
+            }}
+          >
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                style={{
+                  textAlign: msg.senderId === user._id ? "right" : "left",
+                  padding: "5px",
+                }}
+              >
+                <p>{msg.message}</p>
+              </div>
+            ))}
+          </div>
+
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Type a message..."
+          />
+          <button onClick={sendMessage}>Send</button>
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
 export default Chat;
