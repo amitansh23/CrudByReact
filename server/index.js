@@ -24,7 +24,6 @@ app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 
-// ✅ Session Setup
 app.use(session({
     name: "sessionId",
     secret: "Amitansh",
@@ -100,7 +99,35 @@ io.on("connection", (socket) => {
 
     
 
-    // socket.emit("msg", "mhjh")
+    socket.emit("msg", "mhjh")
+    socket.emit("hii", "hii")
+    socket.emit("kaiseho", "kaise ho??")
+    
+    socket.on("userLoggedIn", (data) => {
+       
+            console.log(" User Logged In", data.user);
+    
+           if(socket){
+            io.emit("login", {name:data.user} );
+            console.log("user login....")
+           }
+    
+       
+    });
+
+    socket.on("Update", async(data)=>{
+        console.log("update",data?.userid)
+        const user = await userModel.findById(data?.userid)
+        if(user){
+            const usersoc= user.socketId;
+            console.log(usersoc)
+            socket.to(usersoc).emit("updatedata","Profile Update")
+        }
+
+    })
+    
+    
+    
   
     socket.on("private-message", async ({ senderId, receiverId, message }) => {
         const receiverSocketId = onlineUsers.get(receiverId);
@@ -111,24 +138,69 @@ io.on("connection", (socket) => {
     
 
     // ✅ Handle User Disconnect
-    socket.on("disconnect", async () => {
-        console.log(`🔴 User Disconnected: ${socket.id}`);
+    // socket.on("disconnect", async () => {
+    //     console.log(`🔴 User Disconnected: ${socket.id}`);
 
         // ✅ Find User by Socket ID & Remove It
-        const user = await userModel.findOneAndUpdate(
-            { socketId: socket.id },
-            { socketId: "" },
-            { new: true }
-        );
+//         const user = await userModel.findOneAndUpdate(
+//             { socketId: socket.id },
+//             { socketId: "" },
+//             { new: true }
+//         );
 
-        if (user) {
-            onlineUsers.delete(user._id.toString());
-            console.log(`✅ Removed socketId for user ${user._id}`);
-        }
-    });
+//         if (user) {
+//             onlineUsers.delete(user._id.toString());
+//             console.log(`✅ Removed socketId for user ${user._id}`);
+//         }
+//     });
 });
 
 export {io};
 
-// ✅ API Routes
+
 app.use("/api", route);
+
+
+
+const sendBirthdayEmail = async () => {
+    try {
+        const today = new Date();
+        const usersWithBirthdayToday = await userModel.find({
+            $expr: {
+                $and: [
+                    { $eq: [{ $dayOfMonth: "$birthday" }, today.getDate()] },
+                    { $eq: [{ $month: "$birthday" }, today.getMonth() + 1] },
+                ],
+            },
+        });
+
+        if (usersWithBirthdayToday.length > 0) {
+            let transporter = nodemailer.createTransport({
+                service: "gmail",
+                auth: { user: "officialcheck1234@gmail.com", pass: process.env.SKEY },
+            });
+
+            for (let user of usersWithBirthdayToday) {
+                let messageOptions = {
+                    from: "officialcheck1234@gmail.com",
+                    to: user.email,
+                    subject: `Happy Birthday, ${user.fname}! 🎉`,
+                    text: `Dear ${user.fname},\n\nWishing you a very Happy Birthday! 🎂🎉 Have a wonderful day!\n\nBest Regards,\nTeam`,
+                };
+
+                await transporter.sendMail(messageOptions);
+                console.log(`🎉 Birthday email sent to: ${user.email}`);
+            }
+        } else {
+            console.log("❌ No birthdays today.");
+        }
+    } catch (error) {
+        console.error("❌ Error sending birthday emails:", error);
+    }
+};
+
+
+// cron.schedule("0 0 * * *", sendBirthdayEmail);
+
+
+

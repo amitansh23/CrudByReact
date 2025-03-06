@@ -62,7 +62,11 @@ const userSchema = new Schema({
     CreatedBy:{
         type: Schema.Types.ObjectId, 
         ref: 'users'
-    }
+    },
+    UpdatedBy: { 
+         type: String,
+         default: null
+    },
 
 })
 

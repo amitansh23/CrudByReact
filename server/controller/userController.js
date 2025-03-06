@@ -17,6 +17,7 @@ import ejs from "ejs";
 import mailSender from "../utils/mailSender.js";
 import mongoose from "mongoose";
 import { io } from "../index.js";
+import Chat from "../model/chatModel.js";
 
 
 
@@ -196,22 +197,24 @@ export const getbyid = async (req, res) => {
 export const update = async (req, res) => {
   try {
     const id = req.params.id;
+    const { updatedByEmail, ...userData } = req.body; // 🛠 Extract `updatedByEmail` & user data
 
-    const userData = await User.findById(id);
-    if (!userData) {
+    const user = await User.findById(id);
+    if (!user) {
       return res.status(404).json({ msg: "User not found" });
     }
-    const time = { Updated_at: DateTime.now().toUTC().toISO() };
-    const mergedObj = { ...req.body, ...time };
 
-    const updateData = await User.findByIdAndUpdate(id, mergedObj, {
-      new: true,
-    });
+    const time = { Updated_at: DateTime.now().toUTC().toISO(), UpdatedBy: updatedByEmail };
+    const mergedObj = { ...userData, ...time }; 
+
+    const updateData = await User.findByIdAndUpdate(id, mergedObj, { new: true });
+    
     res.status(200).json({ msg: "User Updated", updateData });
   } catch (error) {
-    res.status(404).json({ msg: "user not found" });
+    res.status(500).json({ msg: "Error updating user", error });
   }
 };
+
 
 export const deleteuser = async (req, res) => {
   try {
@@ -819,4 +822,57 @@ export const getUsersByRole = async (req, res) => {
     return res.status(500).json({ success: false, msg: "Internal Server Error" });
   }
 };
+
+
+
+export const adminid = async (req, res) => {
+  try {
+      const admin = await User.findById(req.params.id);
+      if (!admin) {
+          return res.status(404).json({ msg: "Admin not found" });
+      }
+      res.json({ socketId: admin.socketId });
+  } catch (error) {
+      res.status(500).json({ msg: "Server Error" });
+  }
+};
+
+
+
+
+export const sendMessages =  async (req, res) => {
+  try {
+      const { senderId, receiverId, message } = req.body;
+
+      const chatMessage = new Chat({
+          senderId,
+          receiverId,
+          message,
+      });
+
+      await chatMessage.save();
+      res.status(200).json({ success: true, msg: "Message Saved" });
+  } catch (error) {
+      res.status(500).json({ success: false, msg: "Message not saved" });
+  }
+};
+
+
+export const getMessages = async (req, res) => {
+  try {
+      const { senderId, receiverId } = req.params;
+
+      const messages = await Chat.find({
+          $or: [
+              { senderId, receiverId },
+              { senderId: receiverId, receiverId: senderId },
+          ],
+      }).sort({ timestamp: 1 });
+
+      res.status(200).json({ success: true, messages });
+  } catch (error) {
+      res.status(500).json({ success: false, msg: "Error loading messages" });
+  }
+};
+
 
