@@ -1,5 +1,5 @@
 import express from 'express';
-import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout, getUserProfile, uploadMultiFiles, getMultiFiles,unsubscribe, getUsersByRole,adminid, sendMessages, getMessages} from '../controller/userController.js';
+import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout, getUserProfile, uploadMultiFiles, getMultiFiles,unsubscribe, getUsersByRole,adminid, sendMessages, getMessages, getUserIpLocations} from '../controller/userController.js';
 const route = express.Router();
 import { book, available_slots } from '../HotelController/hotel.js'; 
 
@@ -90,6 +90,8 @@ route.get("/admin/:id", adminid);
 
 route.post("/messages",sendMessages);
 route.get("/messages/:senderId/:receiverId", getMessages);
+
+route.get("/ip-locations", getUserIpLocations);
 
 
 

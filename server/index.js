@@ -13,13 +13,17 @@ import cron from "node-cron";
 import nodemailer from "nodemailer";
 import userModel from "./model/userModel.js";
 import route from "./routes/userRoute.js";
+import Chat from "./model/chatModel.js";
+import requestIp from "request-ip";
+import iplocation from "./model/iplocation.js";
+
 
 dotenv.config();
 
 const app = express();
 const server = createServer(app);
 
-// ✅ CORS Setup (API & Socket.io)
+
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
@@ -33,24 +37,24 @@ app.use(session({
     cookie: { maxAge: 1000 * 60 * 60 * 1, secure: false, httpOnly: true },
 }));
 
-// ✅ Static File Handling
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ✅ MongoDB Connection
+
 const PORT = process.env.PORT || 8000;
 const MONGO_URI = process.env.MONGO_URI;
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ Database connected successfully"))
-    .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+    .then(() => console.log("Database connected successfully"))
+    .catch((err) => console.error("MongoDB Connection Error:", err));
 
 server.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(` Server running on port ${PORT}`);
 });
 
-// ✅ Socket.io Setup (Fixed Configuration)
+
 const io = new Server(server, {
     cors: {
         origin: "http://localhost:3000",
@@ -73,18 +77,11 @@ io.on("connection", (socket) => {
     console.log(`🔵 New User Connected: ${socket.id}`);
 
     socket.on("join", async ({ userId }) => {
-        const user = await userModel.findById(userId);
-        if (!user) return;
-
-        
-        if (user.role === 1 || user.role === 0) {
-            socket.join("admins");
-            console.log(`✅ Admin ${userId} joined 'admins' room`);
+        if (userId) {
+            onlineUsers.set(userId, socket.id);
+            await userModel.findByIdAndUpdate(userId, { socketId: socket.id });
+            console.log(`User ${userId} is online with Socket ID: ${socket.id}`);
         }
-
-
-       
-        await userModel.findByIdAndUpdate(userId, { socketId: socket.id });
     });
 
     
@@ -99,9 +96,9 @@ io.on("connection", (socket) => {
 
     
 
-    socket.emit("msg", "mhjh")
-    socket.emit("hii", "hii")
-    socket.emit("kaiseho", "kaise ho??")
+    // socket.emit("msg", "mhjh")
+    // socket.emit("hii", "hii")
+    // socket.emit("kaiseho", "kaise ho??")
     
     socket.on("userLoggedIn", (data) => {
        
@@ -128,31 +125,12 @@ io.on("connection", (socket) => {
     
     
     
-  
-    socket.on("private-message", async ({ senderId, receiverId, message }) => {
-        const receiverSocketId = onlineUsers.get(receiverId);
+    socket.on("private-message", ({ senderSocketId, receiverSocketId, message }) => {
         if (receiverSocketId) {
-            io.to(receiverSocketId).emit("new-message", { senderId, message });
+            io.to(receiverSocketId).emit("new-message", { senderSocketId, message });
         }
     });
     
-
-    // ✅ Handle User Disconnect
-    // socket.on("disconnect", async () => {
-    //     console.log(`🔴 User Disconnected: ${socket.id}`);
-
-        // ✅ Find User by Socket ID & Remove It
-//         const user = await userModel.findOneAndUpdate(
-//             { socketId: socket.id },
-//             { socketId: "" },
-//             { new: true }
-//         );
-
-//         if (user) {
-//             onlineUsers.delete(user._id.toString());
-//             console.log(`✅ Removed socketId for user ${user._id}`);
-//         }
-//     });
 });
 
 export {io};
@@ -184,23 +162,63 @@ const sendBirthdayEmail = async () => {
                 let messageOptions = {
                     from: "officialcheck1234@gmail.com",
                     to: user.email,
-                    subject: `Happy Birthday, ${user.fname}! 🎉`,
-                    text: `Dear ${user.fname},\n\nWishing you a very Happy Birthday! 🎂🎉 Have a wonderful day!\n\nBest Regards,\nTeam`,
+                    subject: `Happy Birthday, ${user.fname}!`,
+                    text: `Dear ${user.fname},\n\nWishing you a very Happy Birthday!  Have a wonderful day!\n\nBest Regards,\nTeam`,
                 };
 
                 await transporter.sendMail(messageOptions);
-                console.log(`🎉 Birthday email sent to: ${user.email}`);
+                console.log(` Birthday email sent to: ${user.email}`);
             }
         } else {
-            console.log("❌ No birthdays today.");
+            console.log("No birthdays today.");
         }
     } catch (error) {
-        console.error("❌ Error sending birthday emails:", error);
+        console.error("Error sending birthday emails:", error);
     }
 };
 
 
 // cron.schedule("0 0 * * *", sendBirthdayEmail);
 
+app.use(requestIp.mw());
 
+app.use(async (req, res, next) => {
+    const clientIp = req.clientIp || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    
+    if (!clientIp) {
+        console.error("❌ No IP detected");
+        return res.status(400).json({ success: false, msg: "IP Address not found" });
+    }
 
+    console.log("✅ Client IP:", clientIp);
+    
+    // ✅ Proceed to next middleware or route
+    next();
+});
+
+app.use(async (req, res, next) => {
+    const clientIp = req.clientIp || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    if (!clientIp) return res.status(400).json({ success: false, msg: "IP Address not found" });
+
+    console.log("Client IP:", clientIp);
+
+    try {
+        const { data } = await axios.get(`https://ipapi.co/${clientIp}/json/`);
+        console.log("Fetched IP Data:", data);
+
+        const newIpLocation = new iplocation({
+            ipAddress: clientIp,
+            country: data.country_name || "Unknown",
+            city: data.city || "Unknown",
+            latitude: data.latitude || 0,
+            longitude: data.longitude || 0
+        });
+
+        await newIpLocation.save();
+        console.log(" Data stored in MongoDB:", newIpLocation);
+    } catch (error) {
+        console.error("Error storing IP:", error);
+    }
+
+    next(); // Continue processing request
+});

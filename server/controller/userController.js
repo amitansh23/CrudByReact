@@ -18,6 +18,8 @@ import mailSender from "../utils/mailSender.js";
 import mongoose from "mongoose";
 import { io } from "../index.js";
 import Chat from "../model/chatModel.js";
+import geoip from "geoip-lite";
+import IpLocation from "../model/iplocation.js";
 
 
 
@@ -876,3 +878,12 @@ export const getMessages = async (req, res) => {
 };
 
 
+
+export const getUserIpLocations = async (req, res) => {
+  try {
+      const locations = await IpLocation.find();
+      res.status(200).json({ success: true, locations });
+  } catch (error) {
+      res.status(500).json({ success: false, message: "Error fetching IP locations" });
+  }
+};
