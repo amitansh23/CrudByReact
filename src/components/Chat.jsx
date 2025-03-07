@@ -10,7 +10,6 @@ const Chat = () => {
   const [selectedReceiver, setSelectedReceiver] = useState(null);
   const [userList, setUserList] = useState([]);
   const [chatOpen, setChatOpen] = useState(false);
-
   const socketRef = useRef(null);
 
   useEffect(() => {
@@ -25,15 +24,7 @@ const Chat = () => {
     if (!user) return;
 
     try {
-      let roleQuery = "";
-      if (user?.role === 2) {
-        roleQuery = "1"; // Users see Admins
-      } else if (user?.role === 1) {
-        roleQuery = "2"; // Admins see Users
-      } else if (user?.role === 0) {
-        roleQuery = "1,2"; // SuperAdmins see both Admins & Users
-      }
-
+      let roleQuery = user?.role === 2 ? "1" : user?.role === 1 ? "2" : "1,2";
       const res = await axios.get(`http://localhost:8000/api/getusers?roles=${roleQuery}`, {
         withCredentials: true,
       });
@@ -45,6 +36,7 @@ const Chat = () => {
   }, [user]);
 
   useEffect(() => {
+    
     fetchUsersByRole();
   }, [fetchUsersByRole]);
 
@@ -81,9 +73,13 @@ const Chat = () => {
     if (receiverId) {
       try {
         const response = await axios.get(`http://localhost:8000/api/getbyid/${receiverId}`);
-        console.log("ReceiverSocket ID:", response.data.socketId);
         setReceiverSocketId(response.data.socketId);
         setChatOpen(true);
+
+        // Fetch chat history
+        const chatResponse = await axios.get(`http://localhost:8000/api/messages/${user._id}/${receiverId}`);
+        setMessages(chatResponse.data.messages);
+        
       } catch (error) {
         console.error("Error fetching receiver socket ID:", error);
       }
@@ -113,7 +109,6 @@ const Chat = () => {
   return (
     <div>
       <h2>Chat</h2>
-     
 
       <div className="dropbox">
         <label>Chat with:</label>

@@ -20,6 +20,7 @@ import UploadMultipleImages from './components/uploadmultifile';
 import GetmultiFile from './components/getmultifile';
 import Chat from './components/Chat';
 import AdminDashboard from './components/Admin/admindashboard';
+import LocationData from './components/iplocation';
 
 
 
@@ -68,6 +69,7 @@ function App() {
             <Route path="/getmultifile" element={<GetmultiFile />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/admindashboard" element={<AdminDashboard />} />
+            <Route path="/location" element={<LocationData />} />
 
 
 

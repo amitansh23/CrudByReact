@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { DateTime } from "luxon";
 import { io } from "socket.io-client";
-import Chat from "../Chat";
+// import Chat from "../Chat";
 
 const User = () => {
 
@@ -21,9 +21,9 @@ const User = () => {
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedRole, setSelectedRole] = useState("");
 
-  const [selectedAdmin, setSelectedAdmin] = useState(null);
-  const [receiverSocketId, setReceiverSocketId] = useState("");
-  const [chatOpen, setChatOpen] = useState(false);
+  // const [selectedAdmin, setSelectedAdmin] = useState(null);
+  // const [receiverSocketId, setReceiverSocketId] = useState("");
+  // const [chatOpen, setChatOpen] = useState(false);
 
   
 
@@ -59,27 +59,27 @@ try {
 }},[navigate]);
 
 
-const [adminList, setAdminList] = useState([]); // ✅ Store Admins List
+// const [adminList, setAdminList] = useState([]); // ✅ Store Admins List
 
 
-const fetchAdmins = useCallback(async () => {
-  try {
-    const res = await axios.get(`http://localhost:8000/api/getusers?roles=1`, {
-      withCredentials: true
+// const fetchAdmins = useCallback(async () => {
+//   try {
+//     const res = await axios.get(`http://localhost:8000/api/getusers?roles=1`, {
+//       withCredentials: true
       
-    }
-  );
+//     }
+//   );
 
-    setAdminList(res?.data?.users);
-  } catch (error) {
-    console.error("Error fetching admins:", error);
-  }
-}, []);
+//     setAdminList(res?.data?.users);
+//   } catch (error) {
+//     console.error("Error fetching admins:", error);
+//   }
+// }, []);
 
-useEffect(() => {
-  fetchAdmins();
+// useEffect(() => {
+//   fetchAdmins();
   
-}, [fetchAdmins]);
+// }, [fetchAdmins]);
 
 
 
@@ -161,21 +161,21 @@ useEffect(() => {
 
 
 
-const handleAdminSelect = async (e) => {
-  const adminId = e.target.value;
-  setSelectedAdmin(adminId);
+// const handleAdminSelect = async (e) => {
+//   const adminId = e.target.value;
+//   setSelectedAdmin(adminId);
 
-  if(adminId){
-    try {
-      const response = await axios.get(`http://localhost:8000/api/admin/${adminId}`);
-      setReceiverSocketId(response.data.socketId);
-      setChatOpen(true);
+//   if(adminId){
+//     try {
+//       const response = await axios.get(`http://localhost:8000/api/admin/${adminId}`);
+//       setReceiverSocketId(response.data.socketId);
+//       // setChatOpen(true);
       
-    } catch (error) {
-      console.error("Error fetching receiver socket ID:", error);
+//     } catch (error) {
+//       console.error("Error fetching receiver socket ID:", error);
       
-    }
-  }}
+//     }
+//   }}
 
   
 
@@ -262,7 +262,7 @@ const handleAdminSelect = async (e) => {
       </select>
       </div>
 
-      <div className="dropbox">
+      {/* <div className="dropbox">
   <label><strong>Chat with:</strong></label>
   <select onChange={handleAdminSelect} >
     <option value="">Admins</option>
@@ -276,7 +276,7 @@ const handleAdminSelect = async (e) => {
 
 {chatOpen && selectedAdmin && receiverSocketId && (
         <Chat userId={user._id} receiverId={receiverSocketId} />
-      )}
+      )} */}
  
 
 
