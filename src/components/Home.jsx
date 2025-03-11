@@ -1,32 +1,34 @@
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import { useState, useEffect } from 'react';
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import LoginModal from './Auth/LoginModal';
+import Container from "react-bootstrap/Container";
+import Nav from "react-bootstrap/Nav";
+import Navbar from "react-bootstrap/Navbar";
+import { useState, useEffect } from "react";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import LoginModal from "./Auth/LoginModal";
 // import { useNavigate } from 'react-router-dom';
 
-const Home=()=> {
+const Home = () => {
   // const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [show, setShow] = useState(false);
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('userData');
-    console.log(storedUser)
+    const storedUser = localStorage.getItem("userData");
+    console.log(storedUser);
     if (storedUser) {
-      setUser(JSON.parse(storedUser));  
+      setUser(JSON.parse(storedUser));
+      setRole(JSON.parse(storedUser).role);
     }
   }, []);
 
-const clearStorage = async () => {
+  const clearStorage = async () => {
     try {
       const response = await fetch("http://localhost:8000/api/logout", {
         method: "POST",
         credentials: "include", // Ensures session cookies are sent
       });
-      
+
       const data = await response.json();
       if (data.success) {
         localStorage.clear(); // Remove user data from local storage
@@ -37,11 +39,12 @@ const clearStorage = async () => {
     } catch (error) {
       console.error("Error during logout:", error);
     }
-  }
+  };
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
-    localStorage.setItem('userData', JSON.stringify(userData));
+    setRole(userData.role);
+    localStorage.setItem("userData", JSON.stringify(userData));
     setShow(false); // Close the modal on successful login
   };
 
@@ -49,7 +52,7 @@ const clearStorage = async () => {
     <>
       <Navbar bg="dark" data-bs-theme="dark">
         <Container>
-          <Navbar.Brand>Navbar</Navbar.Brand>
+          {/* <Navbar.Brand>Navbar</Navbar.Brand> */}
           <Nav className="me-auto">
             <Modal show={show} onHide={() => setShow(false)}>
               <Modal.Header closeButton>
@@ -68,7 +71,10 @@ const clearStorage = async () => {
             <Nav.Link href="profile">Profile</Nav.Link>
             <Nav.Link href="getmultifile">Album</Nav.Link>
             <Nav.Link href="uploadfile">Upload profile</Nav.Link>
-            
+
+            {(role === 0 || role === 1) && (
+              <Nav.Link href="admindashboard">Dashboard</Nav.Link>
+            )}
 
             {!user ? (
               <Button variant="primary" onClick={() => setShow(true)}>
@@ -84,6 +90,6 @@ const clearStorage = async () => {
       <h2>{user ? `${user.fname} ${user.lname}` : ""}</h2>
     </>
   );
-}
+};
 
 export default Home;
