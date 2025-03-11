@@ -6,6 +6,9 @@ const ipLocationSchema = new mongoose.Schema({
     city: String,
     latitude: Number,
     longitude: Number,
+    device: String,
+    location: String,
+    
     date: { type: Date, default: Date.now }
   });
   

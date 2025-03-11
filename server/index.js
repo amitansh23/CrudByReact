@@ -16,7 +16,9 @@ import route from "./routes/userRoute.js";
 import Chat from "./model/chatModel.js";
 import requestIp from "request-ip";
 import iplocation from "./model/iplocation.js";
-
+import axios from "axios";
+import geoip from "geoip-lite";
+import UserAgent from "user-agents";
 
 dotenv.config();
 
@@ -66,6 +68,93 @@ const io = new Server(server, {
 });
 
 app.set("io", io)
+
+// app.use(requestIp.mw());
+
+// app.use(async (req, res, next) => {
+//     const clientIp = req.clientIp || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+//     if (!clientIp) {
+//         console.error("No IP detected");
+//         return res.status(400).json({ success: false, msg: "IP Address not found" });
+//     }
+
+//     console.log("Client IP:", clientIp);
+
+//     try {
+       
+//         const { data } = await axios.get(`https://ipapi.co/${clientIp}/json/`);
+//         console.log("Fetched IP Data:", data);
+
+//         const newIpLocation = new iplocation({
+//             ipAddress: clientIp,
+//             country: data.country_name || "Unknown",
+//             city: data.city || "Unknown",
+//             latitude: data.latitude || 0,
+//             longitude: data.longitude || 0,
+//             location: data.org || "Unknown",
+//             device: data.user_agent || "Unknown",
+//         });
+
+//         await newIpLocation.save();
+//         // console.log("Data stored in MongoDB:", newIpLocation);
+//     } catch (error) {
+//         console.error("Error storing IP:", error);
+//     }
+
+//     next(); 
+// });
+
+// var ip = "207.97.227.239";
+// var geo = geoip.lookup(ip);
+
+// console.log(geo);
+
+// app.use(async (req, res, next) => {
+//     const clientIp = req.clientIp || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+//     const geo = geoip.lookup(clientIp);
+
+//     if (!clientIp) {
+//         console.error("No IP detected");
+//         return res.status(400).json({ success: false, msg: "IP Address not found" });
+//     }
+
+//     console.log("Client IP:", clientIp);
+
+//     try {
+       
+
+
+//         const newIpLocation = new iplocation({
+//             ipAddress: clientIp,
+//             country: geo?.country || "Unknown",
+//             city: geo?.city || "Unknown",
+//             latitude: geo?.latitude || 0,
+//             longitude: geo?.longitude || 0,
+//             location: geo?.org || "Unknown",
+//             device: geo?.user_agent || "Unknown",
+//         });
+
+//         await newIpLocation.save();
+//         console.log("Data stored in MongoDB:", newIpLocation);
+//     } catch (error) {
+//         console.error("Error storing IP:", error);
+//     }
+
+//     next(); 
+// });
+// const userAgent = new UserAgent({ deviceCategory: 'desktop' })
+// // const userAgent = new UserAgent();
+// console.log(userAgent.toString());
+
+// console.log(JSON.stringify(userAgent.data, null, 2));
+
+
+
+app.get("/", (req, res) => {
+  res.send("IP Tracking Service Running...");
+});
+
 
 
 
@@ -180,45 +269,45 @@ const sendBirthdayEmail = async () => {
 
 // cron.schedule("0 0 * * *", sendBirthdayEmail);
 
-app.use(requestIp.mw());
+// app.use(requestIp.mw());
 
-app.use(async (req, res, next) => {
-    const clientIp = req.clientIp || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+// app.use(async (req, res, next) => {
+//     const clientIp = req.clientIp || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
     
-    if (!clientIp) {
-        console.error("❌ No IP detected");
-        return res.status(400).json({ success: false, msg: "IP Address not found" });
-    }
+//     if (!clientIp) {
+//         console.error("❌ No IP detected");
+//         return res.status(400).json({ success: false, msg: "IP Address not found" });
+//     }
 
-    console.log("✅ Client IP:", clientIp);
+//     console.log("✅ Client IP:", clientIp);
     
-    // ✅ Proceed to next middleware or route
-    next();
-});
+//     // ✅ Proceed to next middleware or route
+//     next();
+// });
 
-app.use(async (req, res, next) => {
-    const clientIp = req.clientIp || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-    if (!clientIp) return res.status(400).json({ success: false, msg: "IP Address not found" });
+// app.use(async (req, res, next) => {
+//     const clientIp = req.clientIp || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+//     if (!clientIp) return res.status(400).json({ success: false, msg: "IP Address not found" });
 
-    console.log("Client IP:", clientIp);
+//     console.log("Client IP:", clientIp);
 
-    try {
-        const { data } = await axios.get(`https://ipapi.co/${clientIp}/json/`);
-        console.log("Fetched IP Data:", data);
+//     try {
+//         const { data } = await axios.get(`https://ipapi.co/${clientIp}/json/`);
+//         console.log("Fetched IP Data:", data);
 
-        const newIpLocation = new iplocation({
-            ipAddress: clientIp,
-            country: data.country_name || "Unknown",
-            city: data.city || "Unknown",
-            latitude: data.latitude || 0,
-            longitude: data.longitude || 0
-        });
+//         const newIpLocation = new iplocation({
+//             ipAddress: clientIp,
+//             country: data.country_name || "Unknown",
+//             city: data.city || "Unknown",
+//             latitude: data.latitude || 0,
+//             longitude: data.longitude || 0
+//         });
 
-        await newIpLocation.save();
-        console.log(" Data stored in MongoDB:", newIpLocation);
-    } catch (error) {
-        console.error("Error storing IP:", error);
-    }
+//         await newIpLocation.save();
+//         console.log(" Data stored in MongoDB:", newIpLocation);
+//     } catch (error) {
+//         console.error("Error storing IP:", error);
+//     }
 
-    next(); // Continue processing request
-});
+//     next(); // Continue processing request
+// });

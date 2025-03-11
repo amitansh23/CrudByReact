@@ -70,3 +70,12 @@ export function getUser(req, res, next) {
     }
 }
 
+export const isAdmin = (req,res, next)=>{
+        if(req?.session?.user || req?.session?.user?.role !== 1){
+            return res.status(403).json({msg: "Access Denied", success: false});
+        }
+    next();
+}
+
+
+

@@ -19,8 +19,10 @@ import mongoose from "mongoose";
 import { io } from "../index.js";
 import Chat from "../model/chatModel.js";
 import geoip from "geoip-lite";
-import IpLocation from "../model/iplocation.js";
-
+// import IpLocation from "../model/iplocation.js";
+import  { sendOTP } from "../utils/twilioService.js";
+import PhoneOtp from "../model/PhoneOtp.js";
+import excelJS from "exceljs";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -879,11 +881,126 @@ export const getMessages = async (req, res) => {
 
 
 
-export const getUserIpLocations = async (req, res) => {
-  try {
-      const locations = await IpLocation.find();
-      res.status(200).json({ success: true, locations });
-  } catch (error) {
-      res.status(500).json({ success: false, message: "Error fetching IP locations" });
+// Generate and send OTP
+export const send_otp = async (req, res) => {
+  const { phoneNumber } = req.body;
+
+  if (!phoneNumber) {
+      return res.status(400).json({ success: false, msg: "Phone number is required" });
   }
+
+  try {
+      // Generate 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+      // Save OTP in database
+      await PhoneOtp.create({ phoneNumber, otp });
+
+      // Send OTP using Twilio
+      const response = await sendOTP(phoneNumber, otp);
+
+      if (!response.success) {
+          return res.status(500).json({ success: false, msg: "Failed to send OTP" });
+      }
+
+      res.status(200).json({ success: true, msg: "OTP sent successfully" });
+  } catch (error) {
+      console.error("Error sending OTP:", error);
+      res.status(500).json({ success: false, msg: "Error sending OTP" });
+  }
+};
+
+export const verifyotp = async (req, res) => {
+  const { phoneNumber, otp } = req.body;
+
+  if (!phoneNumber || !otp) {
+      return res.status(400).json({ success: false, msg: "Phone number and OTP are required" });
+  }
+
+  try {
+      // Find the latest OTP for the given phone number
+      const otpRecord = await PhoneOtp.findOne({ phoneNumber }).sort({ createdAt: -1 });
+
+      if (!otpRecord || otpRecord.otp !== otp) {
+          return res.status(400).json({ success: false, msg: "Invalid or expired OTP" });
+      }
+
+      // OTP is valid - Delete it after verification
+      await PhoneOtp.deleteOne({ _id: otpRecord._id });
+
+      res.status(200).json({ success: true, msg: "OTP verified successfully" });
+  } catch (error) {
+      console.error("Error verifying OTP:", error);
+      res.status(500).json({ success: false, msg: "Error verifying OTP" });
+  }
+};
+
+
+
+export const excel =  async (req, res) => {
+  try {
+    const users = await User.find().populate("CreatedBy", "fname lname");
+
+    // Create a new Excel Workbook
+    const workbook = new excelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Users Data");
+
+    // Define columns
+    worksheet.columns = [
+        { header: "Name", key: "name", width: 35 },
+        { header: "Email", key: "email", width: 35 },
+        { header: "Role", key: "role", width: 35 },
+        { header: "Created By", key: "createdBy", width: 35 },
+    ];
+    // STYLING
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "000000" }, 
+      };
+    
+      cell.font = {
+        bold: true,
+        color: { argb: "FFFFFF" }, 
+        size: 12,
+      };
+    
+      cell.alignment = { horizontal: "center", vertical: "middle" }; 
+    });
+
+    // Add data rows
+    users.forEach(user => {
+        worksheet.addRow({
+            name: `${user.fname} ${user.lname}`,
+            email: user.email,
+            role: user.role === 1 ? "Admin" : user.role === 0 ? "SuperAdmin" : "User",
+            createdBy: user?.CreatedBy ? `${user.CreatedBy.fname} ${user.CreatedBy.lname}` : "NA"
+        });
+    });
+
+    // Create file path
+    const filePath = path.join(__dirname, "../exports", "Users_Data.xlsx");
+
+    // Ensure directory exists
+    if (!fs.existsSync(path.dirname(filePath))) {
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    }
+
+    // Write file to disk and send response
+    await workbook.xlsx.writeFile(filePath);
+    res.download(filePath, "Users_Data.xlsx", (err) => {
+        if (err) {
+            console.error("File Download Error:", err);
+            res.status(500).json({ success: false, msg: "Error downloading file" });
+        }
+
+        // Delete file after sending (optional)
+        setTimeout(() => fs.unlinkSync(filePath), 5000);
+    });
+
+} catch (error) {
+    console.error("Excel Export Error:", error);
+    res.status(500).json({ success: false, msg: "Failed to export Excel file" });
+}
 };

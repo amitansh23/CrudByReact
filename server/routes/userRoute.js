@@ -1,5 +1,5 @@
 import express from 'express';
-import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout, getUserProfile, uploadMultiFiles, getMultiFiles,unsubscribe, getUsersByRole,adminid, sendMessages, getMessages, getUserIpLocations} from '../controller/userController.js';
+import {create, getall, getbyname, getbyid, update, deleteuser, login, tauth, softdelete, restore, backup, registration, regis, forgotpassword, updatepassword, uploadfile, getlimiteddata, createEvent, logout, getUserProfile, uploadMultiFiles, getMultiFiles,unsubscribe, getUsersByRole,adminid, sendMessages, getMessages, verifyotp, send_otp, excel} from '../controller/userController.js';
 const route = express.Router();
 import { book, available_slots } from '../HotelController/hotel.js'; 
 
@@ -8,7 +8,7 @@ import multer from 'multer';
 import { getUser } from '../middleware/token.js';
 import registrationotp from '../controller/RegistrationotpController.js';
 import forgetotp from '../controller/ForgetotpController.js';
-
+import { isAdmin } from '../middleware/token.js';
 
 
 const fileFilter = (req, file, cb) => {
@@ -91,7 +91,11 @@ route.get("/admin/:id", adminid);
 route.post("/messages",sendMessages);
 route.get("/messages/:senderId/:receiverId", getMessages);
 
-route.get("/ip-locations", getUserIpLocations);
+// route.get("/ip-locations", getUserIpLocations);
+
+route.post("/send-otp", send_otp);
+route.post("/verify-otp", verifyotp);
+route.get("/export-users", excel);
 
 
 
