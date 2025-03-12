@@ -572,9 +572,145 @@ export const getMultiFiles = async (req, res) => {
 };
 
 
+// export const getlimiteddata = async (req, res) => {
+//   try {
+//     let { count, search } = req.query;
+//     count = parseInt(count) || 5;
+//     const sortField = req.query.sortField || "Created_at";
+//     const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+//     const role = req.query.role || "all";
 
 
+//     let filter = {};
+//     if (search) {
+//         const searchWords = search.split(" ").filter(word => word.trim() !== "");
+//       filter.$or = searchWords.map(word => ({
+//         $or: [
+//           { fname: { $regex: word, $options: "i" } },
+//           { email: { $regex: word, $options: "i" } },
+//         ],
+//       }));
+      
+//     }
 
+//     if(role && ["0","1","2"].includes(role)){
+//       filter.role = parseInt(role);
+//     }
+
+//     const totalItems = await User.countDocuments(filter); // Get total count
+//     const userData = await User.find(filter).limit(count).populate({
+//       path: "CreatedBy",
+//       // select: "fname"
+//     }).sort({ [sortField]: sortOrder });
+
+//     res.status(200).json({ userData, total: totalItems });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(404).json({ msg: "Error fetching data" });
+//   }
+// };
+
+// export const getlimiteddata = async (req, res) => {
+//   try {
+//     let { page, limit, search, sortField, sortOrder, role } = req.query;
+
+//     page = parseInt(page) || 1; // Default to page 1
+//     limit = parseInt(limit) || 5; // Default limit per page
+//     const skip = (page - 1) * limit; // Calculate how many records to skip
+
+//     sortField = sortField || "Created_at"; // Default sorting field
+//     sortOrder = sortOrder === "asc" ? 1 : -1; // Sorting order
+
+//     let filter = {};
+    
+//     // Search filter
+//     if (search) {
+//       const searchWords = search.split(" ").filter(word => word.trim() !== "");
+//       filter.$or = searchWords.map(word => ({
+//         $or: [
+//           { fname: { $regex: word, $options: "i" } },
+//           { email: { $regex: word, $options: "i" } },
+//         ],
+//       }));
+//     }
+
+//     // Role filter
+//     if (role && ["0", "1", "2"].includes(role)) {
+//       filter.role = parseInt(role);
+//     }
+
+//     // Get total number of documents for pagination
+//     const totalItems = await User.countDocuments(filter);
+//     const totalPages = Math.ceil(totalItems / limit); // Calculate total pages
+
+//     // Fetch paginated user data
+//     const userData = await User.find(filter)
+//       .sort({ [sortField]: sortOrder })
+//       .skip(skip)
+//       .limit(limit)
+//       .populate({
+//         path: "CreatedBy",
+//       });
+
+//     res.status(200).json({ 
+//       userData, 
+//       total: totalItems, 
+//       totalPages, 
+//       currentPage: page 
+//     });
+//   } catch (error) {
+//     console.error("Error fetching data:", error);
+//     res.status(500).json({ msg: "Error fetching data" });
+//   }
+// };
+
+// export const getlimiteddata = async (req, res) => {
+//   try {
+//     let { page, limit, search, sortField, sortOrder, role } = req.query;
+
+//     page = parseInt(page) > 0 ? parseInt(page) : 1; // Ensure valid page number
+//     limit = parseInt(limit) > 0 ? parseInt(limit) : 5; // Default limit per page
+//     const skip = (page - 1) * limit;
+
+//     sortField = sortField || "Created_at";
+//     sortOrder = sortOrder === "asc" ? 1 : -1;
+
+//     let filter = {};
+
+//     // ✅ Search Filter
+//     if (search) {
+//       const searchRegex = new RegExp(search, "i"); // Case-insensitive regex
+//       filter.$or = [{ fname: searchRegex }, { email: searchRegex }];
+//     }
+
+//     // ✅ Role Filter
+//     if (role && ["0", "1", "2"].includes(role)) {
+//       filter.role = parseInt(role);
+//     }
+
+//     // ✅ Get total count for pagination
+//     const totalItems = await User.countDocuments(filter);
+//     const totalPages = Math.ceil(totalItems / limit);
+
+//     // ✅ Fetch filtered & paginated data
+//     const userData = await User.find(filter)
+//       .sort({ [sortField]: sortOrder })
+//       .skip(skip)
+//       .limit(limit)
+//       .populate({ path: "CreatedBy" });
+
+//     res.status(200).json({
+//       success: true,
+//       userData,
+//       total: totalItems,
+//       totalPages,
+//       currentPage: page,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching data:", error);
+//     res.status(500).json({ success: false, msg: "Error fetching data" });
+//   }
+// };
 
 
 
@@ -582,115 +718,58 @@ export const getMultiFiles = async (req, res) => {
 
 export const getlimiteddata = async (req, res) => {
   try {
-    let { count, search } = req.query;
-    count = parseInt(count) || 5;
-    const sortField = req.query.sortField || "Created_at";
-    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
-    const role = req.query.role || "all";
+    let { page, count, search, sortField, sortOrder, role } = req.query;
 
+    page = parseInt(page) > 0 ? parseInt(page) : 1; // Ensure valid page number
+    // limit = parseInt(count) > 0 ? parseInt(count) : 5; // Default limit per page
+    // console.log("Limit:", limit);
+    const skip = (page - 1) * count;
+
+    sortField = sortField || "Created_at";
+    sortOrder = sortOrder === "asc" ? 1 : -1;
 
     let filter = {};
+
+    
     if (search) {
-        const searchWords = search.split(" ").filter(word => word.trim() !== "");
-      filter.$or = searchWords.map(word => ({
-        $or: [
-          { fname: { $regex: word, $options: "i" } },
-          { email: { $regex: word, $options: "i" } },
-        ],
-      }));
-      
+      const searchRegex = new RegExp(search, "i"); 
+      filter.$or = [{ fname: searchRegex }, { email: searchRegex }];
     }
 
-    if(role && ["0","1","2"].includes(role)){
+    
+    if (role && ["0", "1", "2"].includes(role)) {
       filter.role = parseInt(role);
     }
 
+   
+    const totalItems = await User.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / count);
 
+    
+    const userData = await User.find(filter)
+      .sort({ [sortField]: sortOrder })
+      .skip(skip)
+      .limit(count)
+      .populate({ path: "CreatedBy" });
 
-
-    const totalItems = await User.countDocuments(filter); // Get total count
-    const userData = await User.find(filter).limit(count).populate({
-      path: "CreatedBy",
-      // select: "fname"
-    }).sort({ [sortField]: sortOrder });
-
-    res.status(200).json({ userData, total: totalItems });
+    res.status(200).json({
+      success: true,
+      userData,
+      total: totalItems,
+      totalPages,
+      currentPage: page,
+      itemsPerPage: count, 
+    });
   } catch (error) {
-    console.log(error);
-    res.status(404).json({ msg: "Error fetching data" });
+    console.error("Error fetching data:", error);
+    res.status(500).json({ success: false, msg: "Error fetching data" });
   }
 };
 
-// export const createEvent = async (req, res) => {
-//   const SCOPES = process.env.SCOPES;
-//   const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY.replace(
-//     new RegExp("\\\\n", "g"),
-//     "\n"
-//   );
-//   const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL;
-//   const GOOGLE_PROJECT_NUMBER = process.env.GOOGLE_PROJECT_NUMBER;
-//   const GOOGLE_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
 
-//   const jwtClient = new google.auth.JWT(
-//     GOOGLE_CLIENT_EMAIL,
-//     null,
-//     GOOGLE_PRIVATE_KEY,
-//     SCOPES
-//   );
 
-//   const calendar = google.calendar({
-//     version: "v3",
-//     project: GOOGLE_PROJECT_NUMBER,
-//     auth: jwtClient,
-//   });
 
-//   var event = {
-//     summary: "My first event!",
-//     location: "Hyderabad,India",
-//     description: "First event with nodeJS!",
-//     start: {
-//       dateTime: "2025-03-04T09:00:00-07:00",
-//       timeZone: "Asia/Dhaka",
-//     },
-//     end: {
-//       dateTime: "2025-03-05T17:00:00-07:00",
-//       timeZone: "Asia/Dhaka",
-//     },
-//     attendees: [],
-//     reminders: {
-//       useDefault: false,
-//       overrides: [
-//         { method: "email", minutes: 24 * 60 },
-//         { method: "popup", minutes: 10 },
-//       ],
-//     },
-//   };
 
-//   const auth = new google.auth.GoogleAuth({
-//     keyFile: process.env.keyFile,
-//     scopes: "https://www.googleapis.com/auth/calendar",
-//   });
-//   auth.getClient().then((a) => {
-//     calendar.events.insert(
-//       {
-//         auth: a,
-//         calendarId: GOOGLE_CALENDAR_ID,
-//         resource: event,
-//       },
-//       function (err, event) {
-//         if (err) {
-//           console.log(
-//             "There was an error contacting the Calendar service: " + err
-//           );
-//           return;
-//         }
-//         console.log("Event created");
-
-//         res.jsonp("Event successfully created!");
-//       }
-//     );
-//   });
-// };
 
 
 
@@ -937,70 +1016,135 @@ export const verifyotp = async (req, res) => {
 
 
 
-export const excel =  async (req, res) => {
-  try {
-    const users = await User.find().populate("CreatedBy", "fname lname");
+// export const excel =  async (req, res) => {
+//   try {
+//     const users = await User.find().populate("CreatedBy", "fname lname");
 
-    // Create a new Excel Workbook
+//     // Create a new Excel Workbook
+//     const workbook = new excelJS.Workbook();
+//     const worksheet = workbook.addWorksheet("Users Data");
+
+//     // Define columns
+//     worksheet.columns = [
+//         { header: "Name", key: "name", width: 35 },
+//         { header: "Email", key: "email", width: 35 },
+//         { header: "Role", key: "role", width: 35 },
+//         { header: "Created By", key: "createdBy", width: 35 },
+//     ];
+//     // STYLING
+//     worksheet.getRow(1).eachCell((cell) => {
+//       cell.fill = {
+//         type: "pattern",
+//         pattern: "solid",
+//         fgColor: { argb: "000000" }, 
+//       };
+    
+//       cell.font = {
+//         bold: true,
+//         color: { argb: "FFFFFF" }, 
+//         size: 12,
+//       };
+    
+//       cell.alignment = { horizontal: "center", vertical: "middle" }; 
+//     });
+
+//     // Add data rows
+//     users.forEach(user => {
+//         worksheet.addRow({
+//             name: `${user.fname} ${user.lname}`,
+//             email: user.email,
+//             role: user.role === 1 ? "Admin" : user.role === 0 ? "SuperAdmin" : "User",
+//             createdBy: user?.CreatedBy ? `${user.CreatedBy.fname} ${user.CreatedBy.lname}` : "NA"
+//         });
+//     });
+
+//     // Create file path
+//     const filePath = path.join(__dirname, "../exports", "Users_Data.xlsx");
+
+//     // Ensure directory exists
+//     if (!fs.existsSync(path.dirname(filePath))) {
+//         fs.mkdirSync(path.dirname(filePath), { recursive: true });
+//     }
+
+//     // Write file to disk and send response
+//     await workbook.xlsx.writeFile(filePath);
+//     res.download(filePath, "Users_Data.xlsx", (err) => {
+//         if (err) {
+//             console.error("File Download Error:", err);
+//             res.status(500).json({ success: false, msg: "Error downloading file" });
+//         }
+
+//         // Delete file after sending (optional)
+//         setTimeout(() => fs.unlinkSync(filePath), 5000);
+//     });
+
+// } catch (error) {
+//     console.error("Excel Export Error:", error);
+//     res.status(500).json({ success: false, msg: "Failed to export Excel file" });
+// }
+// };
+
+export const excel = async (req, res) => {
+  try {
+    const { search, role, sortField, sortOrder } = req.query;
+
+    let filter = {};
+    if (role !== undefined && role !== "") {
+      const roleNumber = Number(role);
+      if (!isNaN(roleNumber)) {
+        filter.role = roleNumber;
+      }
+    }
+    if (search) {
+      filter.$or = [
+        { fname: { $regex: search, $options: "i" } },
+        { lname: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    let users = await User.find(filter)
+      .sort({ [sortField]: sortOrder === "asc" ? 1 : -1 })
+      .select("fname lname email role CreatedBy");
+
     const workbook = new excelJS.Workbook();
     const worksheet = workbook.addWorksheet("Users Data");
 
-    // Define columns
     worksheet.columns = [
-        { header: "Name", key: "name", width: 35 },
-        { header: "Email", key: "email", width: 35 },
-        { header: "Role", key: "role", width: 35 },
-        { header: "Created By", key: "createdBy", width: 35 },
+      { header: "S.NO.", key: "index", width: 25 },
+      { header: "Name", key: "name", width: 25 },
+      { header: "Email", key: "email", width: 25 },
+      { header: "Role", key: "role", width: 25 },
+      { header: "Created By", key: "createdBy", width: 25 },
     ];
-    // STYLING
+
+    users.forEach((user, index) => {
+      worksheet.addRow({
+        index: index + 1,
+        name: `${user.fname} ${user.lname}`,
+        email: user.email,
+        role: user.role === 1 ? "Admin" : user.role === 0 ? "SuperAdmin" : "User",
+        createdBy: user.CreatedBy?.fname || "NA",
+      });
+    });
+
+   
     worksheet.getRow(1).eachCell((cell) => {
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "000000" }, 
-      };
-    
-      cell.font = {
-        bold: true,
-        color: { argb: "FFFFFF" }, 
-        size: 12,
-      };
-    
-      cell.alignment = { horizontal: "center", vertical: "middle" }; 
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "00000000" } };
+      cell.alignment = { horizontal: "center" };
     });
 
-    // Add data rows
-    users.forEach(user => {
-        worksheet.addRow({
-            name: `${user.fname} ${user.lname}`,
-            email: user.email,
-            role: user.role === 1 ? "Admin" : user.role === 0 ? "SuperAdmin" : "User",
-            createdBy: user?.CreatedBy ? `${user.CreatedBy.fname} ${user.CreatedBy.lname}` : "NA"
-        });
-    });
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=Filtered_Users_Data.xlsx"
+    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-    // Create file path
-    const filePath = path.join(__dirname, "../exports", "Users_Data.xlsx");
-
-    // Ensure directory exists
-    if (!fs.existsSync(path.dirname(filePath))) {
-        fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    }
-
-    // Write file to disk and send response
-    await workbook.xlsx.writeFile(filePath);
-    res.download(filePath, "Users_Data.xlsx", (err) => {
-        if (err) {
-            console.error("File Download Error:", err);
-            res.status(500).json({ success: false, msg: "Error downloading file" });
-        }
-
-        // Delete file after sending (optional)
-        setTimeout(() => fs.unlinkSync(filePath), 5000);
-    });
-
-} catch (error) {
-    console.error("Excel Export Error:", error);
-    res.status(500).json({ success: false, msg: "Failed to export Excel file" });
-}
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Error generating Excel file:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
 };
