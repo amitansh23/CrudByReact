@@ -14,14 +14,17 @@ const User = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
 
-  const [count, setCount] = useState(5);
+  // const [count]= useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [sortField, setSortField] = useState("Created_at");
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedRole, setSelectedRole] = useState("");
 
   const fetchData = useCallback(
-    async (limit, query, field, order, role) => {
+    async (currentpage, query, field, order, role) => {
       // const token = localStorage.getItem("token");
 
       // const res = await axios.get('http://localhost:8000/api/getall',{ headers : {
@@ -29,7 +32,7 @@ const User = () => {
       // setUsers(res.data)
       try {
         const res = await axios.get(
-          `http://localhost:8000/api/getlimiteddata?count=${limit}&search=${query}&sortField=${field}&sortOrder=${order}&role=${role}`,
+          `http://localhost:8000/api/getlimiteddata?page=${currentpage}&count=${itemsPerPage}&search=${query}&sortField=${field}&sortOrder=${order}&role=${role}`,
           {
             // headers: {
             //   auth: token,
@@ -38,25 +41,33 @@ const User = () => {
           }
         );
         setUsers(res?.data?.userData);
+        setTotalPages(Math.ceil(res?.data?.total / itemsPerPage));
         setTotal(res?.data?.total);
       } catch (error) {
         console.error("Error fetching data:", error);
         navigate("/login");
       }
     },
-    [navigate]
+    [navigate, itemsPerPage]
   );
 
   const downloadExcel = async () => {
     try {
+      const queryParams = new URLSearchParams({
+        search,
+        sortField,
+        sortOrder,
+        role: selectedRole,
+      }).toString();
+  
       const response = await axios.get(
-        "http://localhost:8000/api/export-users",
+        `http://localhost:8000/api/export-users?${queryParams}`,
         {
-          responseType: "blob", // Important for file download
+          responseType: "blob", 
           withCredentials: true,
         }
       );
-
+      
       const blob = new Blob([response.data], {
         type: response.headers["content-type"],
       });
@@ -84,9 +95,18 @@ const User = () => {
     setSortOrder(newOrder);
   };
 
-  const handlenext = () => {
-    setCount(count + 5);
-  };
+  // const handlenext = () => {
+  //   setCount(count + 5);
+  // };
+  const Refresh=()=>{
+    setCurrentPage(1)
+    setSearch("")
+setItemsPerPage(5)
+setSortField("Created_at")
+setSortOrder("desc")
+setSelectedRole("")
+
+  }
 
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
@@ -104,8 +124,13 @@ const User = () => {
       setUser(JSON.parse(storedUser));
     }
 
-    fetchData(count, search, sortField, sortOrder, selectedRole);
-  }, [count, search, sortField, sortOrder, selectedRole, fetchData]);
+    fetchData(currentPage, search, sortField, sortOrder, selectedRole);
+  }, [currentPage, search, sortField, sortOrder, selectedRole, fetchData,itemsPerPage]);
+
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   const [socketId, setSocketId] = useState("");
 
@@ -166,7 +191,7 @@ const User = () => {
       .then((res) => {
         setUsers((prevUser) => prevUser.filter((user) => user._id !== userId));
         toast.success(res.data.msg, { positioin: "top-center" });
-        setTotal((prevTotal) => prevTotal - 1);
+        setTotalPages((prevTotal) => prevTotal - 1);
       })
       .catch((error) => {
         console.log(error);
@@ -213,6 +238,14 @@ const User = () => {
           <option value="2">User</option>
         </select>
       </div>
+      <button
+                  onClick={() => {
+                    Refresh();
+                  }}
+                >
+                  {" "}
+                  REFRESH{" "}
+                </button>
 
       <div className="download">
         <button onClick={downloadExcel}>Export as Excel</button>
@@ -306,15 +339,56 @@ const User = () => {
                   REMOVE{" "}
                 </button>
 
+                
+
                 <Link to={"/edit/" + user._id}>EDIT</Link>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <button className="addButton" onClick={handlenext}>
-        Next
-      </button>
+      <div className="pagination">
+  {/* Previous Button */}
+  <button 
+    disabled={currentPage === 1} 
+    onClick={() => handlePageChange(currentPage - 1)}
+  >
+    Previous
+  </button>
+
+  
+  {[...Array(totalPages)].map((_, index) => (
+    <button
+      key={index}
+      className={currentPage === index + 1 ? "active" : ""}
+      onClick={() => handlePageChange(index + 1)}
+    >
+      {index + 1}
+    </button>
+  ))}
+
+ 
+  <button 
+    disabled={currentPage === totalPages} 
+    onClick={() => handlePageChange(currentPage + 1)}
+  >
+    Next
+  </button>
+</div>
+
+<div className="dropbox">
+  <label>Show: </label>
+  <select 
+    onChange={(e) => setItemsPerPage(Number(e.target.value))} 
+    value={itemsPerPage}
+  >
+    {Array.from({ length: Math.ceil(total / 5) }, (_, i) => (i + 1) * 5).map((num) => (
+      <option key={num} value={num}>
+        Show {num}
+      </option>
+    ))}
+  </select>
+</div>
     </div>
   );
 };
